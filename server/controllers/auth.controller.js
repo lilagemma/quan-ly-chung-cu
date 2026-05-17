@@ -501,6 +501,7 @@ exports.verifyOTP = async (req, res, next) => {
  */
 exports.resetPassword = async (req, res, next) => {
   try {
+    console.log("body: ", req.body);
     const { email, resetToken, newPassword, confirmPassword } = req.body;
 
     // Validate input

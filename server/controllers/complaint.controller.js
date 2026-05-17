@@ -330,11 +330,55 @@ exports.getComplaintStatistics = async (req, res, next) => {
     });
 
     // open Complaints
-    // const inProgressComplaints = await Complaint.countDocuments({
-    //   status: "in-progress",
-    // });
-    const inProgressComplaints = 0;
+    const inProgressComplaints = await Complaint.countDocuments({
+      status: "in-progress",
+    });
 
+    res.status(200).json({
+      success: true,
+      data: {
+        totalComplaints: totalComplaints,
+        resolvedComplaints: resolvedComplaints,
+        openComplaints: openComplaints,
+        inProgressComplaints: inProgressComplaints,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching emergency statistics:", error);
+    next(error);
+  }
+};
+
+
+/**
+ * @desc    Get complaint statistics
+ * @route   GET /api/complaints/statistics/:id
+ * @access  
+ */
+exports.getComplaintStatisticsById = async (req, res, next) => {
+  try {
+
+    const { id } = req.params;
+    // Total Complaints
+    const totalComplaints = await Complaint.countDocuments({ user_id: id });
+
+    // Resolved Complaints
+    const resolvedComplaints = await Complaint.countDocuments({
+      status: "resolved",
+      user_id: id,
+    });
+
+    // open Complaints
+    const openComplaints = await Complaint.countDocuments({
+      status: "open",
+      user_id: id,
+    });
+
+    // open Complaints
+    const inProgressComplaints = await Complaint.countDocuments({
+      status: "in-progress",
+      user_id: id,
+    });
     res.status(200).json({
       success: true,
       data: {

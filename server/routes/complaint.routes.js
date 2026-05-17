@@ -8,6 +8,7 @@ router.use(authenticate);
 
 router.get("/statistics", complaintController.getComplaintStatistics);
 
+router.get("/statistics/:id", complaintController.getComplaintStatisticsById);
 
 // POST /api/complaints - Create new complaint
 router.post('/', complaintController.createComplaint);

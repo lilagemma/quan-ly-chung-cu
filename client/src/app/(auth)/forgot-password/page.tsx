@@ -94,9 +94,9 @@ export default function ForgotPasswordPage() {
       });
 
       const data = await response.json();
-
+      console.log("verifyOTPdata: ", data);
       if (response.ok) {
-        setResetToken(data.resetToken);
+        setResetToken(data.data.resetToken);
         setMessage("Mã OTP đã được xác minh thành công.");
         setStep('password');
       } else {
@@ -131,12 +131,11 @@ export default function ForgotPasswordPage() {
     }
 
     setLoading(true);
-
     try {
       const response = await fetch(`${API_URL}/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resetToken, newPassword })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resetToken, newPassword, confirmPassword, email }),
       });
 
       const data = await response.json();

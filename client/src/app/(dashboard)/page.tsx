@@ -59,22 +59,34 @@ export default function DashboardPage() {
     triggerLoading,
     resolveLoading,
   } = useEmergency();
-  const {getComplaintStatistics,} = useComplaints();
+  const { 
+    getComplaintStatistics, 
+    getComplaintStatisticsById ,
+  } = useComplaints();
   
   const [dashboardData, setDashboardData] = useState(MOCK_DATA);
   const [statistics, setStatistics] = useState<ComplaintStatistics | null>(
+    null,
+  );
+  const [statisticsById, setStatisticsById] = useState<ComplaintStatistics | null>(
     null,
   );
   const [dataLoading, setDataLoading] = useState(true);
 
   // Check if user is admin/manager
   const isAdmin = user && ['manager', 'admin'].includes(user.role);
+  const isResident = user && ["resident"].includes(user.role);
+  const userId = user && user._id;
+
 
   const fetchStatistic = useCallback(async (page: number) => {
       try {
         setDataLoading(true);
         const data = await getComplaintStatistics();
-        console.log("data1: ", data);
+        if (userId != null ) {
+          const dataById = await getComplaintStatisticsById(userId);
+          setStatisticsById(dataById);
+        }
         setStatistics(data);
       } catch (error) {
         console.error('Failed to fetch history:', error);
@@ -206,14 +218,25 @@ export default function DashboardPage() {
           lateFeesApplied={dashboardData.maintenance.lateFeesApplied}
           loading={dataLoading}
         />
-
+        {isAdmin && (
+          <ComplaintsWidget
+            role={user.role}
+            inProgressCount={statistics?.inProgressComplaints}
+            openCount={statistics?.openComplaints}
+            resolvedCount={statistics?.resolvedComplaints}
+            loading={dataLoading}
+          />
+        )}
         {/* Complaints Widget */}
-        <ComplaintsWidget
-          inProgressCount={statistics?.inProgressComplaints}
-          openCount={statistics?.openComplaints}
-          resolvedCount={statistics?.resolvedComplaints}
-          loading={dataLoading}
-        />
+        {isResident && (
+          <ComplaintsWidget
+            role={user.role}
+            inProgressCount={statisticsById?.inProgressComplaints}
+            openCount={statisticsById?.openComplaints}
+            resolvedCount={statisticsById?.resolvedComplaints}
+            loading={dataLoading}
+          />
+        )}
 
         {/* Asset Status Widget */}
         <AssetStatusWidget isAdmin={isAdmin || false} />

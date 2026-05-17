@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Plus } from 'lucide-react';
+import { ArrowRight, MessageSquare, Plus } from 'lucide-react';
 
 interface ComplaintsWidgetProps {
+  role: string;
   openCount?: number;
   inProgressCount?: number;
   resolvedCount?: number;
@@ -13,12 +14,14 @@ interface ComplaintsWidgetProps {
 }
 
 export default function ComplaintsWidget({
+  role,
   resolvedCount = 0,
   openCount = 0,
   inProgressCount = 0,
   loading = false,
 }: ComplaintsWidgetProps) {
   const totalActive = openCount + inProgressCount + resolvedCount;
+  const isAdmin = ["manager", "admin"].includes(role);
 
   if (loading) {
     return (
@@ -71,7 +74,6 @@ export default function ComplaintsWidget({
               : "Khiếu nại đang tồn tại"}
           </p>
         </div>
-
         {totalActive > 0 && (
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div className="bg-amber-50 rounded-lg p-2 text-center">
@@ -88,22 +90,32 @@ export default function ComplaintsWidget({
             </div>
           </div>
         )}
-
-        <div className="flex gap-2">
-          <Link href="/complaints" className="flex-1">
-            <Button variant="outline" className="w-full" size="sm">
-              Xem tất cả
-            </Button>
-          </Link>
-          <Link href="/complaints/new" className="flex-1">
-            <Button
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-              size="sm"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Mới
-            </Button>
-          </Link>
-        </div>
+        {isAdmin && (
+          <div className="flex gap-2">
+            <Link href="/admin/complaints" className="flex-1">
+              <Button variant="outline" className="w-full" size="sm">
+                Quản lý khiếu nại <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        )}
+        {!isAdmin && (
+          <div className="flex gap-2">
+            <Link href="/complaints" className="flex-1">
+              <Button variant="outline" className="w-full" size="sm">
+                Xem tất cả
+              </Button>
+            </Link>
+            <Link href="/complaints/new" className="flex-1">
+              <Button
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-1" /> Mới
+              </Button>
+            </Link>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

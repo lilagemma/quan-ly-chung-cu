@@ -273,6 +273,25 @@ export function useComplaints() {
       }
     }, []);
 
+  //getComplaintStatisticsic
+  const getComplaintStatisticsById = useCallback(
+    async (id: string): Promise<ComplaintStatistics> => {
+      try {
+        const response = await api.get(`/complaints/statistics/${id}`);
+        return response.data.data;
+      } catch (err: unknown) {
+        console.error("Error fetching complaint statistics:", err);
+        const axiosError = err as {
+          response?: { data?: { message?: string } };
+        };
+        throw new Error(
+          axiosError.response?.data?.message || "Failed to fetch statistics",
+        );
+      }
+    },
+    [],
+  );
+
   return {
     loading,
     error,
@@ -284,5 +303,6 @@ export function useComplaints() {
     getUploadUrl,
     uploadImage,
     getComplaintStatistics,
+    getComplaintStatisticsById,
   };
 }

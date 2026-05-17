@@ -23,7 +23,7 @@ export default function WatchmanEmergencyPage() {
 
   const [history, setHistory] = useState<Emergency[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(true);
   const [confirmTrigger, setConfirmTrigger] = useState(false);
   const [resolveNotes, setResolveNotes] = useState('');
   const [showResolveForm, setShowResolveForm] = useState(false);

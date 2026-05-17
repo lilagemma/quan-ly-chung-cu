@@ -56,6 +56,29 @@ const navItems: NavItem[] = [
   },
 ];
 
+const navMainAdminItems: NavItem[] = [
+  {
+    href: "/",
+    label: "Bảng điều khiển",
+    icon: <LayoutDashboard className="w-5 h-5" />,
+  },
+  {
+    href: "/maintenance",
+    label: "Phí BẢO TRÌ",
+    icon: <CreditCard className="w-5 h-5" />,
+  },
+  {
+    href: "/service-fees",
+    label: "Phí Dịch Vụ",
+    icon: <FileText className="w-5 h-5" />, // Hoặc bạn có thể dùng CreditCard
+  },
+  {
+    href: "/emergency",
+    label: "Cảnh báo khẩn cấp",
+    icon: <AlertTriangle className="w-5 h-5" />,
+  },
+];
+
 const adminItems: NavItem[] = [
   {
     href: "/admin/users",
@@ -114,6 +137,7 @@ export default function Sidebar() {
   const [showMobileAdminMenu, setShowMobileAdminMenu] = useState(false);
 
   const isAdmin = user && ['manager', 'admin'].includes(user.role);
+  const mainNav = isAdmin ? navMainAdminItems : navItems;
 
   return (
     <>
@@ -150,7 +174,8 @@ export default function Sidebar() {
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider px-3 mb-3">
               Trang chủ chính
             </p>
-            {navItems.map((item) => (
+
+            {mainNav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

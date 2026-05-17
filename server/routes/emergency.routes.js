@@ -13,7 +13,7 @@ router.post('/trigger', emergencyController.triggerEmergency);
 router.get('/active', emergencyController.getActiveEmergencies);
 
 // PUT /api/emergency/:id/resolve - Mark emergency resolved (Manager, Admin)
-router.put('/:id/resolve', authorize('manager', 'admin'), emergencyController.resolveEmergency);
+router.put('/:id/resolve', authorize('manager', 'admin', 'watchman'), emergencyController.resolveEmergency);
 
 // GET /api/emergency/history - Get emergency history (Manager, Admin)
 router.get('/history', emergencyController.getEmergencyHistory);
