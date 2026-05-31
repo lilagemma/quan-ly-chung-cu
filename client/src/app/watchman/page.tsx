@@ -135,20 +135,22 @@ export default function WatchmanDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Emergency Button - Always visible at top */}
-      <Card className={`border-0 shadow-sm ${activeEmergency ? 'border-red-500 bg-red-50' : ''}`}>
+      <Card
+        className={`border-0 shadow-sm ${activeEmergency ? "border-red-500 bg-red-50" : ""}`}
+      >
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-semibold flex items-center gap-2">
-                <Siren className="w-5 h-5 text-red-500" /> Lift Emergency
+                <Siren className="w-5 h-5 text-red-500" /> Khẩn cấp thang máy
               </h3>
               <p className="text-sm text-gray-500 mt-1">
-                {activeEmergency 
-                  ? `Active alert from Flat ${activeEmergency.flat_no}`
-                  : 'Tap to alert everyone'}
+                {activeEmergency
+                  ? `Cảnh báo từ căn hộ ${activeEmergency.flat_no}`
+                  : "Nhấn để gửi cảnh báo cho mọi người"}
               </p>
             </div>
-            <EmergencyButton 
+            <EmergencyButton
               onTrigger={triggerEmergency}
               hasActiveEmergency={!!activeEmergency}
               triggerLoading={triggerLoading}
@@ -162,28 +164,32 @@ export default function WatchmanDashboardPage() {
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
-            <ClipboardEdit className="w-5 h-5 text-blue-600" /> Quick Entry
+            <ClipboardEdit className="w-5 h-5 text-blue-600" /> Ghi nhận nhanh
           </CardTitle>
-          <CardDescription>Log a new visitor</CardDescription>
+          <CardDescription>Thêm lượt khách mới</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                <Label htmlFor="visitorName">Visitor Name *</Label>
+                <Label htmlFor="visitorName"> Tên khách *</Label>
                 <Input
                   id="visitorName"
                   value={visitorName}
                   onChange={(e) => setVisitorName(e.target.value)}
-                  placeholder="Enter name"
+                  placeholder="Nhập tên khách"
                   disabled={submitting}
                 />
               </div>
               <div>
-                <Label htmlFor="flatNo">Flat No. *</Label>
-                <Select value={flatNo} onValueChange={setFlatNo} disabled={submitting}>
+                <Label htmlFor="flatNo">Số căn hộ *</Label>
+                <Select
+                  value={flatNo}
+                  onValueChange={setFlatNo}
+                  disabled={submitting}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder="Chọn" />
                   </SelectTrigger>
                   <SelectContent>
                     {flatOptions.map((flat) => (
@@ -195,35 +201,49 @@ export default function WatchmanDashboardPage() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="purpose">Purpose *</Label>
-                <Select value={purpose} onValueChange={setPurpose} disabled={submitting}>
+                <Label htmlFor="purpose">Mục đích *</Label>
+                <Select
+                  value={purpose}
+                  onValueChange={setPurpose}
+                  disabled={submitting}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder="Chọn" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Delivery">Delivery</SelectItem>
-                    <SelectItem value="Guest">Guest</SelectItem>
-                    <SelectItem value="Maid">Maid</SelectItem>
-                    <SelectItem value="Plumber">Plumber</SelectItem>
-                    <SelectItem value="Electrician">Electrician</SelectItem>
-                    <SelectItem value="Cab">Cab</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="Delivery"> Giao hàng</SelectItem>
+
+                    <SelectItem value="Guest">Khách</SelectItem>
+
+                    <SelectItem value="Maid">Giúp việc</SelectItem>
+
+                    <SelectItem value="Plumber">Thợ sửa nước</SelectItem>
+
+                    <SelectItem value="Electrician">Thợ điện</SelectItem>
+
+                    <SelectItem value="Cab">Taxi</SelectItem>
+
+                    <SelectItem value="Other">Khác</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="col-span-2">
-                <Label htmlFor="vehicleNumber">Vehicle No. (optional)</Label>
+                <Label htmlFor="vehicleNumber">
+                  Biển số xe (không bắt buộc)
+                </Label>
                 <Input
                   id="vehicleNumber"
                   value={vehicleNumber}
-                  onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
+                  onChange={(e) =>
+                    setVehicleNumber(e.target.value.toUpperCase())
+                  }
                   placeholder="e.g., GJ05XX1234"
                   disabled={submitting}
                 />
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? 'Logging...' : 'Log Entry'}
+              {submitting ? "Đang ghi nhận..." : "Ghi nhận vào cổng"}
             </Button>
           </form>
         </CardContent>
@@ -234,19 +254,19 @@ export default function WatchmanDashboardPage() {
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold">{stats.total}</p>
-            <p className="text-xs text-gray-500">Today</p>
+            <p className="text-xs text-gray-500">Hôm nay</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold text-green-600">{stats.inside}</p>
-            <p className="text-xs text-gray-500">Inside</p>
+            <p className="text-xs text-gray-500">Đang ở trong</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold text-gray-400">{stats.exited}</p>
-            <p className="text-xs text-gray-500">Exited</p>
+            <p className="text-xs text-gray-500">Đã rời đi</p>
           </CardContent>
         </Card>
       </div>
@@ -255,9 +275,11 @@ export default function WatchmanDashboardPage() {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Visitors Inside</CardTitle>
+            <CardTitle className="text-lg">Khách đang ở trong</CardTitle>
             <Link href="/watchman/gate-log">
-              <Button variant="ghost" size="sm">View All →</Button>
+              <Button variant="ghost" size="sm">
+                Xem tất cả →
+              </Button>
             </Link>
           </div>
         </CardHeader>
@@ -265,13 +287,16 @@ export default function WatchmanDashboardPage() {
           {entriesLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse h-16 bg-gray-100 rounded-lg"></div>
+                <div
+                  key={i}
+                  className="animate-pulse h-16 bg-gray-100 rounded-lg"
+                ></div>
               ))}
             </div>
           ) : visitorsInside.length === 0 ? (
             <div className="text-center py-6 text-gray-500">
               <span className="text-3xl mb-2 block">👋</span>
-              <p>No visitors currently inside</p>
+              <p>Hiện không có khách bên trong</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -297,7 +322,7 @@ export default function WatchmanDashboardPage() {
                     variant="outline"
                     onClick={() => handleMarkOut(entry._id, entry.visitor_name)}
                   >
-                    Out
+                    Ra cổng
                   </Button>
                 </div>
               ))}

@@ -46,15 +46,17 @@ export default function WatchmanLayout({
   if (user && user.role !== 'watchman') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Access denied. Redirecting...</p>
+        <p className="text-gray-500">
+          Không có quyền truy cập. Đang chuyển hướng...
+        </p>
       </div>
     );
   }
 
   const navItems = [
-    { href: '/watchman', label: 'Home', icon: Home },
-    { href: '/watchman/gate-log', label: 'Gate Log', icon: ClipboardList },
-    { href: '/watchman/emergency', label: 'Emergency', icon: Siren },
+    { href: "/watchman", label: "Trang chủ", icon: Home },
+    { href: "/watchman/gate-log", label: "Nhật ký cổng", icon: ClipboardList },
+    { href: "/watchman/emergency", label: "Khẩn cấp", icon: Siren },
   ];
 
   return (
@@ -68,14 +70,16 @@ export default function WatchmanLayout({
                 <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <span className="font-bold text-lg block leading-tight">Watchman Portal</span>
+                <span className="font-bold text-lg block leading-tight">
+                  Cổng thông tin bảo vệ
+                </span>
                 {user && (
                   <span className="text-xs text-gray-500">{user.name}</span>
                 )}
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-1" /> Logout
+              <LogOut className="w-4 h-4 mr-1" /> Đăng xuất
             </Button>
           </div>
         </div>
@@ -90,21 +94,21 @@ export default function WatchmanLayout({
                 <Siren className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-bold">ACTIVE EMERGENCY</p>
-                <p className="text-sm">Flat {activeEmergency.flat_no}</p>
+                <p className="font-bold">KHẨN CẤP ĐANG DIỄN RA</p>
+                <p className="text-sm">Căn hộ {activeEmergency.flat_no}</p>
               </div>
             </div>
             <Link href="/watchman/emergency">
-              <Button size="sm" variant="secondary">View</Button>
+              <Button size="sm" variant="secondary">
+                Xem
+              </Button>
             </Link>
           </div>
         </div>
       )}
 
       {/* Content */}
-      <main className="p-4">
-        {children}
-      </main>
+      <main className="p-4">{children}</main>
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
@@ -117,13 +121,13 @@ export default function WatchmanLayout({
                 href={item.href}
                 className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
                   isActive
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-500 hover:text-gray-900'
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-500 hover:text-gray-900"
                 }`}
               >
                 <item.icon className="w-5 h-5 mb-0.5" />
                 <span className="text-xs font-medium">{item.label}</span>
-                {item.href === '/watchman/emergency' && activeEmergency && (
+                {item.href === "/watchman/emergency" && activeEmergency && (
                   <span className="absolute top-2 right-1/4 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
                 )}
               </Link>

@@ -11,11 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SOCIETY_NAME } from '@/lib/constants';
 import {
-  PaymentCard,
   ComplaintsWidget,
   AssetStatusWidget,
   EmergencyBanner,
   EmergencyButton,
+  
 } from '@/components/dashboard';
 import {
   AlertTriangle,
@@ -32,15 +32,10 @@ import {
   Zap,
 } from 'lucide-react';
 import { ComplaintStatistics, useComplaints } from '@/hooks/useComplaints';
+import ServiceFeeWidget from "@/components/dashboard/ServiceFeeWidget";
 
 // Mock data - will be replaced with API calls later
 const MOCK_DATA = {
-  maintenance: {
-    amount: 1000,
-    dueDate: new Date(new Date().getFullYear(), new Date().getMonth(), 18).toISOString(),
-    status: 'pending' as const,
-    lateFeesApplied: 0,
-  },
   complaints: {
     openCount: 10,
     inProgressCount: 1,
@@ -210,14 +205,8 @@ export default function DashboardPage() {
 
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Payment Card */}
-        <PaymentCard
-          amount={dashboardData.maintenance.amount}
-          dueDate={dashboardData.maintenance.dueDate}
-          status={dashboardData.maintenance.status}
-          lateFeesApplied={dashboardData.maintenance.lateFeesApplied}
-          loading={dataLoading}
-        />
+        <ServiceFeeWidget isAdmin={isAdmin || false} />
+
         {isAdmin && (
           <ComplaintsWidget
             role={user.role}
@@ -346,7 +335,7 @@ export default function DashboardPage() {
                   </span>
                 </Button>
               </Link>
-              <Link href="/admin/payments">
+              <Link href="/service-fees">
                 <Button
                   variant="secondary"
                   className="w-full h-auto py-4 flex flex-col gap-2 bg-slate-700/50 hover:bg-slate-700 border-0 text-white"

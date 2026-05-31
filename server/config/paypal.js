@@ -1,6 +1,5 @@
-const paypal = require("@paypal/checkout-server-sdk");
+const paypal = require('@paypal/checkout-server-sdk');
 
-// Sandbox environment (dev)
 function environment() {
   return new paypal.core.SandboxEnvironment(
     process.env.PAYPAL_CLIENT_ID,
@@ -8,7 +7,6 @@ function environment() {
   );
 }
 
-// Client instance (giống "razorpay instance")
 function client() {
   return new paypal.core.PayPalHttpClient(environment());
 }

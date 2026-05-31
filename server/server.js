@@ -14,8 +14,6 @@ require("dotenv").config({
 // Import routes
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
-const maintenanceRoutes = require('./routes/maintenance.routes');
-const paymentRoutes = require('./routes/payment.routes');
 const emergencyRoutes = require('./routes/emergency.routes');
 const complaintRoutes = require('./routes/complaint.routes');
 const gatelogRoutes = require('./routes/gatelog.routes');
@@ -23,6 +21,8 @@ const assetRoutes = require('./routes/asset.routes');
 
 // ... các route khác
 const serviceFeeRoutes = require('./routes/serviceFee.routes');
+const expenseRoutes = require("./routes/expenses");
+const reportRoutes = require("./routes/reports");
 
 // Import cron jobs
 const initCronJobs = require('./jobs');
@@ -48,6 +48,14 @@ app.use(express.json({ limit: '10mb' })); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(cookieParser()); // Parse cookies
 
+// ==================== STATIC FILES ====================
+const uploadsPath = path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(uploadsPath));
+
+// app.use("/uploads", express.static("uploads"));
+console.log('📁 Static uploads path:', uploadsPath);
+// ====================================================
+
 // Health check route
 app.get('/api/health', (req, res) => {
   res.status(200).json({ 
@@ -72,14 +80,14 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/maintenance', maintenanceRoutes);
-app.use('/api/payment', paymentRoutes);
 app.use('/api/emergency', emergencyRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/gatelog', gatelogRoutes);
 app.use('/api/assets', assetRoutes);
 
 app.use("/api/service-fees", serviceFeeRoutes);
+app.use("/api/admin/expenses", expenseRoutes);
+app.use("/api/admin/reports", reportRoutes);
 
 
 // 404 handler

@@ -3,13 +3,16 @@ const router = express.Router();
 const { authenticate, authorize } = require("../middleware/auth.middleware");
 const {
   createServiceFee,
+  getAllServiceFees,
   getServiceFees,
   getServiceFeeById,
+  updateServiceFee,
   markAsPaid,
-  getAllFlatNos, // import mới
+  createPaypalOrder,
+  capturePaypalPayment,
+  getAllFlatNos,
 } = require("../controllers/serviceFee.controller");
 
-// Route lấy danh sách tất cả flat_no (chỉ admin/manager)
 router.get(
   "/flatnos",
   authenticate,
@@ -17,16 +20,40 @@ router.get(
   getAllFlatNos,
 );
 
-// Tạo hóa đơn (admin/manager)
-router.post("/", authenticate, authorize("admin", "manager"), createServiceFee);
+router.get(
+  "/all",
+  authenticate,
+  authorize("admin", "manager"),
+  getAllServiceFees,
+);
 
-// Lấy hóa đơn của một căn hộ (cư dân hoặc admin)
-router.get("/:flat_no", authenticate, getServiceFees);
-
-// Lấy chi tiết hóa đơn
 router.get("/bill/:id", authenticate, getServiceFeeById);
 
-// Xác nhận thanh toán (admin)
-router.put("/:id/pay", authenticate, authorize("admin"), markAsPaid);
+router.post("/", authenticate, authorize("admin", "manager"), createServiceFee);
+
+router.put(
+  "/:id/pay",
+  authenticate,
+  authorize("admin", "manager", "resident"),
+  markAsPaid,
+);
+
+router.post(
+  "/:id/paypal/create-order",
+  authenticate,
+  authorize("resident"),
+  createPaypalOrder,
+);
+
+router.post(
+  "/:id/paypal/capture",
+  authenticate,
+  authorize("resident"),
+  capturePaypalPayment,
+);
+
+router.put("/:id", authenticate, authorize("admin", "manager"), updateServiceFee);
+
+router.get("/:flat_no", authenticate, getServiceFees);
 
 module.exports = router;

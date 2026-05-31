@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,13 +9,77 @@ import { Separator } from "@/components/ui/separator";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 
+declare global {
+  interface Window {
+    paypal: any;
+  }
+}
+
+interface ServiceFeeItem {
+  type: string;
+  description?: string;
+  quantity: number;
+  unit_price: number;
+  amount: number;
+}
+
+interface ServiceFee {
+  _id: string;
+  flat_no: string;
+  month: number;
+  year: number;
+  bill_date?: string;
+  due_date: string;
+  items?: ServiceFeeItem[];
+  total_amount: number;
+  status: "pending" | "paid" | "overdue";
+  note?: string;
+  createdAt?: string;
+}
+
+const getErrorMessage = (err: unknown) => {
+  if (typeof err === "object" && err !== null && "response" in err) {
+    const response = err.response as { data?: { message?: string } };
+    return response.data?.message;
+  }
+  if (err instanceof Error) return err.message;
+  return undefined;
+};
+
+const getErrorStatus = (err: unknown) => {
+  if (typeof err === "object" && err !== null && "response" in err) {
+    const response = err.response as { status?: number };
+    return response.status;
+  }
+  return undefined;
+};
+
 export default function ServiceFeeDetail() {
   const { id } = useParams();
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const [fee, setFee] = useState<any>(null);
+  const [fee, setFee] = useState<ServiceFee | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchFeeDetail = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // Đúng endpoint: /service-fees/bill/:id (theo routes của bạn)
+      const response = await api.get(`/service-fees/bill/${id}`);
+      setFee(response.data.data);
+    } catch (err: unknown) {
+      console.error("Lỗi tải chi tiết hóa đơn:", err);
+      const errorMsg = getErrorMessage(err) || "Không tìm thấy hóa đơn";
+      setError(errorMsg);
+      if (getErrorStatus(err) === 404) {
+        setTimeout(() => router.push("/service-fees"), 2000);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [id, router]);
 
   useEffect(() => {
     if (isAuthenticated && id) {
@@ -24,26 +88,7 @@ export default function ServiceFeeDetail() {
       setError("Vui lòng đăng nhập để xem chi tiết hóa đơn");
       setLoading(false);
     }
-  }, [isAuthenticated, id]);
-
-  const fetchFeeDetail = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      // Đúng endpoint: /service-fees/bill/:id (theo routes của bạn)
-      const response = await api.get(`/service-fees/bill/${id}`);
-      setFee(response.data.data);
-    } catch (err: any) {
-      console.error("Lỗi tải chi tiết hóa đơn:", err);
-      const errorMsg = err.response?.data?.message || "Không tìm thấy hóa đơn";
-      setError(errorMsg);
-      if (err.response?.status === 404) {
-        setTimeout(() => router.push("/service-fees"), 2000);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchFeeDetail, isAuthenticated, id]);
 
   const formatCurrency = (amount: number) =>
     amount?.toLocaleString("vi-VN") + " ₫";
@@ -55,9 +100,45 @@ export default function ServiceFeeDetail() {
   };
 
   // Helper hiển thị ngày an toàn
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr: string | Date) => {
     if (!dateStr) return "—";
     return new Date(dateStr).toLocaleDateString("vi-VN");
+  };
+
+  const handlePay = async () => {
+    if (!fee) return;
+
+    if (!window.paypal) {
+      alert("PayPal SDK chua san sang. Vui long tai lai trang.");
+      return;
+    }
+
+    try {
+      const container = document.getElementById("service-fee-detail-paypal");
+      if (container) container.innerHTML = "";
+
+      window.paypal
+        .Buttons({
+          createOrder: async () => {
+            const res = await api.post(`/service-fees/${fee._id}/paypal/create-order`);
+            if (!res.data.success) throw new Error(res.data.message);
+            return res.data.data.order_id;
+          },
+          onApprove: async (data: any) => {
+            await api.post(`/service-fees/${fee._id}/paypal/capture`, {
+              order_id: data.orderID,
+            });
+            await fetchFeeDetail();
+          },
+          onError: (err: unknown) => {
+            console.error("PayPal service fee error:", err);
+            alert("Thanh toan PayPal that bai.");
+          },
+        })
+        .render("#service-fee-detail-paypal");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err) || "Không thể thanh toán hóa đơn");
+    }
   };
 
   if (!isAuthenticated && !loading) {
@@ -133,7 +214,7 @@ export default function ServiceFeeDetail() {
                 </tr>
               </thead>
               <tbody>
-                {fee.items?.map((item: any, index: number) => (
+                {fee.items?.map((item, index) => (
                   <tr key={index}>
                     <td className="border p-3">
                       {item.description || item.type}
@@ -169,12 +250,19 @@ export default function ServiceFeeDetail() {
                 </p>
               )}
             </div>
-            {fee.status !== "paid" && (
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                💳 Thanh toán ngay (QR)
+            {user?.role === "resident" && fee.status !== "paid" && (
+              <Button
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={handlePay}
+              >
+                Thanh toán qua PayPal
               </Button>
             )}
           </div>
+          {user?.role === "resident" && fee.status !== "paid" && (
+            <div id="service-fee-detail-paypal" className="pt-2" />
+          )}
         </CardContent>
       </Card>
 

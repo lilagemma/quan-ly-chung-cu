@@ -305,7 +305,12 @@ export default function AdminComplaintsPage() {
                             {complaint.image_url && (
                               <div className="relative w-8 h-8 rounded overflow-hidden flex-shrink-0">
                                 <Image
-                                  src={complaint.image_url}
+                                  // src={complaint.image_url}
+                                  src={
+                                    complaint.image_url.startsWith("http")
+                                      ? complaint.image_url
+                                      : `http://localhost:4000/${complaint.image_url.replace(/\\/g, "/")}`
+                                  }
                                   alt="Complaint"
                                   fill
                                   className="object-cover"
@@ -409,7 +414,12 @@ export default function AdminComplaintsPage() {
               {selectedComplaint.image_url && (
                 <div className="relative w-full h-48 rounded-lg overflow-hidden border">
                   <Image
-                    src={selectedComplaint.image_url}
+                    // src={selectedComplaint.image_url}
+                    src={
+                      selectedComplaint.image_url.startsWith("http")
+                        ? selectedComplaint.image_url
+                        : `http://localhost:4000/${selectedComplaint.image_url.replace(/\\/g, "/")}`
+                    }
                     alt="Ảnh khiếu nại"
                     fill
                     className="object-contain"

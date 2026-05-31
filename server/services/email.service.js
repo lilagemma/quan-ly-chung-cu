@@ -43,7 +43,7 @@ const formatAmount = (amount) => {
  * @param {number} data.amount - Payment amount
  * @param {number} data.month - Month (1-12)
  * @param {number} data.year - Year
- * @param {string} data.transaction_id - Razorpay payment ID
+ * @param {string} data.transaction_id - payment transaction ID
  * @param {Date} data.payment_date - Payment date
  */
 exports.sendPaymentConfirmation = async (data) => {
@@ -62,7 +62,7 @@ exports.sendPaymentConfirmation = async (data) => {
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: `Payment Confirmation - Maintenance for ${monthName} ${year}`,
+      subject: `Payment Confirmation - Service Fee for ${monthName} ${year}`,
       htmlContent: `
         <!DOCTYPE html>
         <html>
@@ -80,7 +80,7 @@ exports.sendPaymentConfirmation = async (data) => {
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
             <p style="margin-bottom: 20px;">Dear <strong>${name}</strong>,</p>
             
-            <p>Thank you for your payment! Your maintenance payment has been successfully received.</p>
+            <p>Thank you for your payment! Your service fee payment has been successfully received.</p>
             
             <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <h3 style="margin-top: 0; color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Payment Details</h3>
@@ -134,7 +134,7 @@ exports.sendPaymentConfirmation = async (data) => {
         
         Dear ${name},
         
-        Thank you for your payment! Your maintenance payment has been successfully received.
+        Thank you for your payment! Your service fee payment has been successfully received.
         
         Payment Details:
         - Flat No: ${flat_no}
@@ -161,10 +161,10 @@ exports.sendPaymentConfirmation = async (data) => {
 };
 
 /**
- * Send maintenance reminder email
+ * Send service fee reminder email
  * @param {Object} data - Reminder data
  */
-exports.sendMaintenanceReminder = async (data) => {
+exports.sendServiceFeeReminder = async (data) => {
   try {
     const { email, name, flat_no, amount, month, year, due_date, is_overdue = false } = data;
 
@@ -177,8 +177,8 @@ exports.sendMaintenanceReminder = async (data) => {
     });
 
     const subject = is_overdue 
-      ? `Overdue: Maintenance Payment for ${monthName} ${year}`
-      : `Reminder: Maintenance Payment Due for ${monthName} ${year}`;
+      ? `Overdue: Service Fee Payment for ${monthName} ${year}`
+      : `Reminder: Service Fee Payment Due for ${monthName} ${year}`;
 
     const urgencyColor = is_overdue ? '#ef4444' : '#f59e0b';
     const urgencyText = is_overdue ? 'OVERDUE' : 'REMINDER';
@@ -196,13 +196,13 @@ exports.sendMaintenanceReminder = async (data) => {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: ${urgencyColor}; padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; text-align: center;">MyCT2</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">${urgencyText}: Maintenance Payment</p>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">${urgencyText}: Service Fee Payment</p>
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
             <p>Dear <strong>${name}</strong>,</p>
             
-            <p>This is a ${is_overdue ? 'final notice' : 'friendly reminder'} that your maintenance payment for <strong>${monthName} ${year}</strong> is ${is_overdue ? 'overdue' : 'pending'}.</p>
+            <p>This is a ${is_overdue ? 'final notice' : 'friendly reminder'} that your service fee payment for <strong>${monthName} ${year}</strong> is ${is_overdue ? 'overdue' : 'pending'}.</p>
             
             <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <table style="width: 100%; border-collapse: collapse;">
@@ -235,11 +235,11 @@ exports.sendMaintenanceReminder = async (data) => {
         </html>
       `,
       textContent: `
-        ${urgencyText}: Maintenance Payment - MyCT2
+        ${urgencyText}: Service Fee Payment - MyCT2
         
         Dear ${name},
         
-        This is a ${is_overdue ? 'final notice' : 'friendly reminder'} that your maintenance payment for ${monthName} ${year} is ${is_overdue ? 'overdue' : 'pending'}.
+        This is a ${is_overdue ? 'final notice' : 'friendly reminder'} that your service fee payment for ${monthName} ${year} is ${is_overdue ? 'overdue' : 'pending'}.
         
         Flat No: ${flat_no}
         Amount Due: ${formattedAmount}
@@ -256,19 +256,19 @@ exports.sendMaintenanceReminder = async (data) => {
     };
 
     const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Maintenance reminder email sent:', email);
+    console.log('Service fee reminder email sent:', email);
     return response;
   } catch (error) {
-    console.error('Error sending maintenance reminder email:', error);
+    console.error('Error sending service fee reminder email:', error);
     throw error;
   }
 };
 
 /**
- * Send maintenance invoice email (Day 1 of month)
+ * Send service fee invoice email
  * @param {Object} data - Invoice data
  */
-exports.sendMaintenanceInvoice = async (data) => {
+exports.sendServiceFeeInvoice = async (data) => {
   try {
     const { email, name, flat_no, amount, month, year, due_date } = data;
 
@@ -278,7 +278,7 @@ exports.sendMaintenanceInvoice = async (data) => {
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: `Maintenance Invoice - ${monthName} ${year} | MyCT2`,
+      subject: `Service Fee Invoice - ${monthName} ${year} | MyCT2`,
       htmlContent: `
         <!DOCTYPE html>
         <html>
@@ -289,13 +289,13 @@ exports.sendMaintenanceInvoice = async (data) => {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; text-align: center;">🏢 MyCT2</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Monthly Maintenance Invoice</p>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Service Fee Invoice</p>
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
             <p>Dear <strong>${name}</strong>,</p>
             
-            <p>Your maintenance invoice for <strong>${monthName} ${year}</strong> has been generated.</p>
+            <p>Your service fee invoice for <strong>${monthName} ${year}</strong> has been generated.</p>
             
             <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <h3 style="margin-top: 0; color: #0D9488; border-bottom: 2px solid #0D9488; padding-bottom: 10px;">Invoice Details</h3>
@@ -329,7 +329,7 @@ exports.sendMaintenanceInvoice = async (data) => {
             <p>Please log in to the Society Management Portal to make your payment.</p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/maintenance" 
+              <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/service-fees" 
                  style="background: #0D9488; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold;">
                 Pay Now
               </a>
@@ -346,12 +346,12 @@ exports.sendMaintenanceInvoice = async (data) => {
         </html>
       `,
       textContent: `
-        Maintenance Invoice - ${monthName} ${year}
+        Service Fee Invoice - ${monthName} ${year}
         MyCT2
         
         Dear ${name},
         
-        Your maintenance invoice for ${monthName} ${year} has been generated.
+        Your service fee invoice for ${monthName} ${year} has been generated.
         
         Invoice Details:
         - Flat No: ${flat_no}
@@ -370,10 +370,10 @@ exports.sendMaintenanceInvoice = async (data) => {
     };
 
     const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Maintenance invoice email sent:', email);
+    console.log('Service fee invoice email sent:', email);
     return response;
   } catch (error) {
-    console.error('Error sending maintenance invoice email:', error);
+    console.error('Error sending service fee invoice email:', error);
     throw error;
   }
 };
@@ -392,7 +392,7 @@ exports.sendFinalWarning = async (data) => {
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: `⚠️ FINAL WARNING: Maintenance Payment Due in 2 Days | ${monthName} ${year}`,
+      subject: `⚠️ FINAL WARNING: Service Fee Payment Due in 2 Days | ${monthName} ${year}`,
       htmlContent: `
         <!DOCTYPE html>
         <html>
@@ -403,13 +403,13 @@ exports.sendFinalWarning = async (data) => {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; text-align: center;">⚠️ FINAL WARNING</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Maintenance Payment Due in 2 Days</p>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Service Fee Payment Due in 2 Days</p>
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
             <p>Dear <strong>${name}</strong>,</p>
             
-            <p>This is a <strong style="color: #ef4444;">FINAL REMINDER</strong> that your maintenance payment for <strong>${monthName} ${year}</strong> is still pending.</p>
+            <p>This is a <strong style="color: #ef4444;">FINAL REMINDER</strong> that your service fee payment for <strong>${monthName} ${year}</strong> is still pending.</p>
             
             <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
               <p style="margin: 0; color: #dc2626; font-size: 18px; font-weight: bold;">
@@ -443,7 +443,7 @@ exports.sendFinalWarning = async (data) => {
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/maintenance" 
+              <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/service-fees" 
                  style="background: #ef4444; color: white; padding: 15px 40px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px;">
                 PAY NOW - Avoid Late Fee
               </a>
@@ -459,12 +459,12 @@ exports.sendFinalWarning = async (data) => {
         </html>
       `,
       textContent: `
-        ⚠️ FINAL WARNING: Maintenance Payment Due in 2 Days
+        ⚠️ FINAL WARNING: Service Fee Payment Due in 2 Days
         MyCT2
         
         Dear ${name},
         
-        This is a FINAL REMINDER that your maintenance payment for ${monthName} ${year} is still pending.
+        This is a FINAL REMINDER that your service fee payment for ${monthName} ${year} is still pending.
         
         ⏰ Only 2 days left before late fee is applied!
         

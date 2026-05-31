@@ -17,7 +17,6 @@ const bcrypt = require('bcryptjs');
 
 // Import models
 const User = require('../models/User');
-const Maintenance = require('../models/Maintenance');
 const PaymentLog = require('../models/PaymentLog');
 const LiftEmergency = require('../models/LiftEmergency');
 const Complaint = require('../models/Complaint');
@@ -399,64 +398,6 @@ const gateLogsData = [
 ];
 
 // ============================================
-// MAINTENANCE RECORDS SEED DATA
-// ============================================
-
-// Function to generate maintenance records for past months
-function generateMaintenanceData(userId, flatNo) {
-  const records = [];
-  const months = [
-    { month: 10, year: 2025, status: 'paid', paid: true },
-    { month: 11, year: 2025, status: 'paid', paid: true },
-    { month: 12, year: 2025, status: 'paid', paid: true, late: true }, // Paid with late fee
-    { month: 1, year: 2026, status: 'pending', paid: false } // Current month
-  ];
-
-  months.forEach(m => {
-    const dueDate = new Date(m.year, m.month - 1, 18); // Due on 18th
-    const record = {
-      user_id: userId,
-      flat_no: flatNo,
-      month: m.month,
-      year: m.year,
-      amount: 1000,
-      late_fee: m.late ? 100 : 0,
-      total_amount: m.late ? 1100 : 1000,
-      due_date: dueDate,
-      status: m.status
-    };
-
-    if (m.paid) {
-      record.paid_date = m.late 
-        ? new Date(m.year, m.month - 1, 22) // Paid late on 22nd
-        : new Date(m.year, m.month - 1, 10); // Paid on 10th
-      record.razorpay_payment_id = `pay_seed_${flatNo}_${m.month}_${m.year}`;
-      record.razorpay_order_id = `order_seed_${flatNo}_${m.month}_${m.year}`;
-    }
-
-    records.push(record);
-  });
-
-  return records;
-}
-
-// Function to generate payment logs
-function generatePaymentLogs(userId, flatNo, maintenanceRecords) {
-  return maintenanceRecords
-    .filter(m => m.status === 'paid')
-    .map(m => ({
-      user_id: userId,
-      flat_no: flatNo,
-      amount: m.total_amount,
-      payment_date: m.paid_date,
-      transaction_id: m.razorpay_payment_id,
-      month: m.month,
-      year: m.year,
-      razorpay_order_id: m.razorpay_order_id
-    }));
-}
-
-// ============================================
 // MAIN SEED FUNCTION
 // ============================================
 
@@ -474,9 +415,6 @@ async function seedDatabase() {
       console.log('🗑️  Clearing existing data...');
       
       // Clear collections (except manager user)
-      await Maintenance.deleteMany({});
-      console.log('   ✓ Maintenance records cleared');
-      
       await PaymentLog.deleteMany({});
       console.log('   ✓ Payment logs cleared');
       
@@ -553,63 +491,7 @@ async function seedDatabase() {
     console.log('');
 
     // ----------------------------------------
-    // 3. Seed Maintenance Records & Payment Logs
-    // ----------------------------------------
-    console.log('💰 Seeding Maintenance Records...');
-    const residentsAndAdmins = createdUsers.filter(u => 
-      u.role === 'resident' || u.role === 'admin'
-    );
-
-    for (const user of residentsAndAdmins) {
-      if (!user.flat_no) continue;
-      
-      // Check if maintenance records already exist for this flat
-      const existingMaintenance = await Maintenance.findOne({ 
-        flat_no: user.flat_no, 
-        month: 1, 
-        year: 2026 
-      });
-      
-      if (existingMaintenance) {
-        console.log(`   ⏭️  Maintenance for Flat ${user.flat_no} already exists, skipping`);
-        continue;
-      }
-
-      const maintenanceRecords = generateMaintenanceData(user._id, user.flat_no);
-      
-      for (const record of maintenanceRecords) {
-        try {
-          const maintenance = new Maintenance(record);
-          await maintenance.save();
-        } catch (err) {
-          if (err.code === 11000) {
-            // Skip duplicate entries
-            continue;
-          }
-          throw err;
-        }
-      }
-
-      // Create payment logs for paid records
-      const paymentLogs = generatePaymentLogs(user._id, user.flat_no, maintenanceRecords);
-      for (const log of paymentLogs) {
-        try {
-          const paymentLog = new PaymentLog(log);
-          await paymentLog.save();
-        } catch (err) {
-          if (err.code === 11000) {
-            continue;
-          }
-          throw err;
-        }
-      }
-
-      console.log(`   ✓ Created maintenance records & payment logs for Flat ${user.flat_no}`);
-    }
-    console.log('');
-
-    // ----------------------------------------
-    // 4. Seed Complaints
+    // 3. Seed Complaints
     // ----------------------------------------
     console.log('📝 Seeding Complaints...');
     for (const complaintData of complaintsData) {
@@ -683,8 +565,6 @@ async function seedDatabase() {
     console.log('\n📊 Summary:');
     console.log(`   • Users: ${createdUsers.length} residents/admins + 1 watchman`);
     console.log(`   • Assets: ${assetsData.length} (lift, pumps, generator)`);
-    console.log(`   • Maintenance: ${residentsAndAdmins.length * 4} records`);
-    console.log(`   • Payment Logs: ${residentsAndAdmins.length * 3} records`);
     console.log(`   • Complaints: ${complaintsData.length}`);
     console.log(`   • Emergencies: ${emergenciesData.length}`);
     console.log(`   • Gate Logs: ${gateLogsData.length}`);

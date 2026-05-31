@@ -21,7 +21,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -30,18 +31,48 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, ClipboardList, RefreshCw, CheckCircle } from 'lucide-react';
+import { Plus, ClipboardList, RefreshCw, CheckCircle , Edit,
+  Trash2,} from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+
+
+
 
 export default function ComplaintsPage() {
   const { toast } = useToast();
-  const { getMyComplaints, loading } = useComplaints();
+  const { getMyComplaints, loading, updateComplaint, deleteComplaint } =
+    useComplaints();
 
   const [complaints, setComplaints] = useState<Complaint[]>([]);
-  const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pages: 1,
+    total: 0,
+  });
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(
+    null,
+  );
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+
+  // Edit Dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingComplaint, setEditingComplaint] = useState<Complaint | null>(
+    null,
+  );
+  const [editDescription, setEditDescription] = useState("");
+  const [editImage, setEditImage] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Delete Dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [complaintToDelete, setComplaintToDelete] = useState<Complaint | null>(
+    null,
+  );
+
 
   // Fetch complaints
   useEffect(() => {
@@ -51,15 +82,15 @@ export default function ComplaintsPage() {
   const fetchComplaints = async (page: number) => {
     setDataLoading(true);
     try {
-      const status = statusFilter === 'all' ? undefined : statusFilter;
+      const status = statusFilter === "all" ? undefined : statusFilter;
       const response = await getMyComplaints(page, 10, status);
       setComplaints(response.data);
       setPagination(response.pagination);
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to fetch complaints',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to fetch complaints",
+        variant: "destructive",
       });
     } finally {
       setDataLoading(false);
@@ -84,23 +115,113 @@ export default function ComplaintsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'open':
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Đang chờ</Badge>;
-      case 'in-progress':
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Đang xử lý</Badge>;
-      case 'resolved':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Đã giải quyết</Badge>;
+      case "open":
+        return (
+          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+            Đang chờ
+          </Badge>
+        );
+      case "in-progress":
+        return (
+          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+            Đang xử lý
+          </Badge>
+        );
+      case "resolved":
+        return (
+          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+            Đã giải quyết
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   const getStatusStats = () => {
-    const stats = { open: 0, 'in-progress': 0, resolved: 0 };
+    const stats = { open: 0, "in-progress": 0, resolved: 0 };
     complaints.forEach((c) => {
       if (c.status in stats) stats[c.status as keyof typeof stats]++;
     });
     return stats;
+  };
+
+  const openEditDialog = (complaint: Complaint) => {
+    if (complaint.status !== "open") {
+      toast({
+        title: "Không cho phép",
+        description: 'Chỉ được sửa khiếu nại đang ở trạng thái "Đang chờ"',
+        variant: "destructive",
+      });
+      return;
+    }
+    setEditingComplaint(complaint);
+    setEditDescription(complaint.description);
+    setEditImage(null);
+    setEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (complaint: Complaint) => {
+    if (complaint.status !== "open") {
+      toast({
+        title: "Không cho phép",
+        description: 'Chỉ được xóa khiếu nại đang ở trạng thái "Đang chờ"',
+        variant: "destructive",
+      });
+      return;
+    }
+    setComplaintToDelete(complaint);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingComplaint) return;
+    if (!editDescription.trim()) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập mô tả khiếu nại",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const formData = new FormData();
+    formData.append("description", editDescription.trim());
+    if (editImage) {
+      formData.append("image", editImage);
+    }
+
+    try {
+      console.log("🔄 Đang cập nhật khiếu nại ID:", editingComplaint._id); // Debug
+      await updateComplaint(editingComplaint._id, formData);
+
+      toast({
+        title: "Thành công",
+        description: "Khiếu nại đã được cập nhật",
+      });
+
+      setEditDialogOpen(false);
+      setEditingComplaint(null);
+      fetchComplaints(pagination.current); // Refresh danh sách
+    } catch (error: any) {
+      console.error("❌ Lỗi cập nhật:", error); // Debug
+      // Toast đã được xử lý trong hook, nhưng thêm fallback
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!complaintToDelete) return;
+    try {
+      await deleteComplaint(complaintToDelete._id);
+      setDeleteDialogOpen(false);
+      fetchComplaints(pagination.current);
+    } catch (error) {
+      // Toast đã được xử lý trong hook
+    }
   };
 
   const stats = getStatusStats();
@@ -232,7 +353,7 @@ export default function ComplaintsPage() {
                       <TableHead>Thao tác</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  {/* <TableBody>
                     {complaints.map((complaint) => (
                       <TableRow key={complaint._id}>
                         <TableCell className="max-w-md">
@@ -264,6 +385,79 @@ export default function ComplaintsPage() {
                           >
                             Xem chi tiết
                           </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody> */}
+                  <TableBody>
+                    {complaints.map((complaint) => (
+                      <TableRow key={complaint._id}>
+                        <TableCell className="max-w-md">
+                          <div className="flex items-center gap-3">
+                            {/* {complaint.image_url && (
+                              <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={complaint.image_url}
+                                  alt="Complaint"
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            )} */}
+                            {complaint.image_url && (
+                              <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={
+                                    complaint.image_url.startsWith("http")
+                                      ? complaint.image_url
+                                      : `http://localhost:4000/${complaint.image_url.replace(/\\/g, "/")}`
+                                  }
+                                  alt="Complaint"
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            )}
+                            <p className="truncate">{complaint.description}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(complaint.status)}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-500">
+                          {formatDate(complaint.created_at)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openDetailDialog(complaint)}
+                            >
+                              Xem
+                            </Button>
+
+                            {complaint.status === "open" && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-blue-600 hover:text-blue-700"
+                                  onClick={() => openEditDialog(complaint)}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700"
+                                  onClick={() => openDeleteDialog(complaint)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -321,13 +515,28 @@ export default function ComplaintsPage() {
                 {getStatusBadge(selectedComplaint.status)}
               </div>
 
-              {selectedComplaint.image_url && (
+              {/* {selectedComplaint.image_url && (
                 <div className="relative w-full h-64 rounded-lg overflow-hidden border">
                   <Image
                     src={selectedComplaint.image_url}
                     alt="Ảnh khiếu nại"
                     fill
                     className="object-contain"
+                  />
+                </div>
+              )} */}
+              {selectedComplaint?.image_url && (
+                <div className="relative w-full h-64 rounded-lg overflow-hidden border">
+                
+                  <Image
+                    src={
+                      selectedComplaint.image_url.startsWith("http")
+                        ? selectedComplaint.image_url
+                        : `http://localhost:4000/${selectedComplaint.image_url.replace(/\\/g, "/")}`
+                    }
+                    alt="Complaint"
+                    fill
+                    className="object-cover"
                   />
                 </div>
               )}
@@ -369,6 +578,84 @@ export default function ComplaintsPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ==================== EDIT DIALOG ==================== */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Sửa khiếu nại</DialogTitle>
+            <DialogDescription>
+              Chỉ có thể sửa khiếu nại đang chờ xử lý
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="description">Mô tả khiếu nại</Label>
+              <Textarea
+                id="description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={5}
+                placeholder="Nhập nội dung khiếu nại..."
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="image">Hình ảnh mới (tùy chọn)</Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setEditImage(e.target.files?.[0] || null)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Hủy
+            </Button>
+            <Button
+              onClick={handleUpdate}
+              disabled={isSubmitting || !editDescription.trim()}
+            >
+              {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ==================== DELETE CONFIRM DIALOG ==================== */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa khiếu nại</DialogTitle>
+            <DialogDescription>
+              Hành động này không thể hoàn tác. Bạn có chắc muốn xóa khiếu nại
+              này?
+            </DialogDescription>
+          </DialogHeader>
+
+          {complaintToDelete && (
+            <p className="text-sm text-gray-600 py-2 line-clamp-2">
+              "{complaintToDelete.description}"
+            </p>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Hủy
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Xác nhận xóa
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

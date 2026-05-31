@@ -39,25 +39,6 @@ export interface RegisterData {
 
 export type ManagerSetupData = RegisterData;
 
-// Maintenance Types
-export interface Maintenance {
-  _id: string;
-  user_id: string;
-  flat_no: string;
-  month: number;
-  year: number;
-  amount: number;
-  late_fee: number;
-  total_amount: number;
-  due_date: string;
-  paid_date?: string;
-  status: 'pending' | 'paid' | 'overdue';
-  razorpay_payment_id?: string;
-  razorpay_order_id?: string;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface PaymentLog {
   _id: string;
   user_id: string;
@@ -131,7 +112,7 @@ export interface Asset {
 }
 // === THÊM VÀO CUỐI FILE ===
 export interface ServiceFeeItem {
-  type: 'nuoc' | 'xe_o_to' | 'xe_may' | 'xe_dap_dien' | 'quan_ly_van_hanh' | 'other';
+  type: 'dien' | 'nuoc' | 'xe_o_to' | 'xe_may' | 'xe_dap' | 'xe_dap_dien' | 'quan_ly_van_hanh' | 'phat_qua_han' | 'other';
   description: string;
   quantity: number;
   unit_price: number;
@@ -152,4 +133,32 @@ export interface ServiceFee {
   note?: string;
   paid_date?: string;
   createdAt: string;
+}
+
+export interface Expense {
+  _id: string;
+  title: string;
+  category: string;
+  description?: string;
+  amount: number;
+  date: string;
+  paymentMethod?: string;
+  vendor?: string;
+  receiptRef?: string;
+  status: 'pending' | 'paid' | 'cancelled';
+  createdBy: string | User;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExpenseStats {
+  totalExpense: number;
+  paidExpense: number;
+  pendingExpense: number;
+  overdueExpense: number;
+  categoryBreakdown: { category: string; total: number }[];
+  monthlyIncome: number;
+  monthlyExpense: number;
+  profitLoss: number;
+  totalDebt: number;
 }

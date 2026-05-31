@@ -393,3 +393,127 @@ exports.getComplaintStatisticsById = async (req, res, next) => {
     next(error);
   }
 };
+
+
+/**
+ * @desc    Update own complaint (User only)
+ * @route   PUT /api/complaints/:id
+ * @access  Private (Owner only - status must be 'open')
+ */
+
+exports.updateComplaint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const complaint = await Complaint.findById(id);
+
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy khiếu nại'
+      });
+    }
+
+    // Kiểm tra quyền sở hữu
+    if (complaint.user_id.toString() !== user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bạn không có quyền sửa khiếu nại này'
+      });
+    }
+
+    // Chỉ cho phép sửa khi status là 'open'
+    if (complaint.status !== 'open') {
+      return res.status(400).json({
+        success: false,
+        message: 'Chỉ có thể sửa khiếu nại đang ở trạng thái "Đang chờ"'
+      });
+    }
+
+    // Lấy description từ req.body (multer sẽ parse fields)
+    const { description } = req.body;
+
+    if (!description || description.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mô tả khiếu nại không được để trống'
+      });
+    }
+
+    if (description.length > 1000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mô tả không được vượt quá 1000 ký tự'
+      });
+    }
+
+    // Cập nhật
+    complaint.description = description.trim();
+
+    // Nếu có upload hình ảnh mới
+    if (req.file) {
+      complaint.image_url = req.file.path || req.file.location; // tùy theo bạn lưu image ở đâu
+    }
+
+    await complaint.save();
+
+    await complaint.populate('user_id', 'name email flat_no');
+    await complaint.populate('resolved_by', 'name email');
+
+    res.status(200).json({
+      success: true,
+      message: 'Khiếu nại đã được cập nhật thành công',
+      data: complaint
+    });
+  } catch (error) {
+    console.error('Error updating complaint:', error);
+    next(error);
+  }
+};
+/**
+ * @desc    Delete own complaint (User only)
+ * @route   DELETE /api/complaints/:id
+ * @access  Private (Owner only - status must be 'open')
+ */
+exports.deleteComplaint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const complaint = await Complaint.findById(id);
+
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy khiếu nại'
+      });
+    }
+
+    // Kiểm tra quyền sở hữu
+    if (complaint.user_id.toString() !== user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bạn không có quyền xóa khiếu nại này'
+      });
+    }
+
+    // Chỉ cho phép xóa khi status là 'open'
+    if (complaint.status !== 'open') {
+      return res.status(400).json({
+        success: false,
+        message: 'Chỉ có thể xóa khiếu nại đang ở trạng thái "Đang chờ"'
+      });
+    }
+
+    await Complaint.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Khiếu nại đã được xóa thành công'
+    });
+  } catch (error) {
+    console.error('Error deleting complaint:', error);
+    next(error);
+  }
+};

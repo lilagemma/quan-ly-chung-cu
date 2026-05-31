@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils';
 import { SOCIETY_NAME } from '@/lib/constants';
 import {
   LayoutDashboard,
-  CreditCard,
   MessageSquare,
   AlertTriangle,
   Users,
@@ -34,11 +33,11 @@ const navItems: NavItem[] = [
     label: "Bảng điều khiển",
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
-  {
-    href: "/maintenance",
-    label: "Phí BẢO TRÌ",
-    icon: <CreditCard className="w-5 h-5" />,
-  },
+  // {
+  //   href: "/service-fees",
+  //   label: "Phí BẢO TRÌ",
+  //   icon: <FileText className="w-5 h-5" />,
+  // },
   {
     href: "/service-fees",
     label: "Phí Dịch Vụ",
@@ -62,11 +61,11 @@ const navMainAdminItems: NavItem[] = [
     label: "Bảng điều khiển",
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
-  {
-    href: "/maintenance",
-    label: "Phí BẢO TRÌ",
-    icon: <CreditCard className="w-5 h-5" />,
-  },
+  // {
+  //   href: "/service-fees",
+  //   label: "Phí BẢO TRÌ",
+  //   icon: <FileText className="w-5 h-5" />,
+  // },
   {
     href: "/service-fees",
     label: "Phí Dịch Vụ",
@@ -88,7 +87,7 @@ const adminItems: NavItem[] = [
   },
   {
     href: "/admin/payments",
-    label: "Quản lý thanh toán",
+    label: "Quản lý chi phí",
     icon: <BarChart3 className="w-5 h-5" />,
     roles: ["manager", "admin"],
   },
@@ -110,9 +109,9 @@ const adminItems: NavItem[] = [
 const mobileNavItems: NavItem[] = [
   { href: "/", label: "Trang chủ", icon: <Home className="w-5 h-5" /> },
   {
-    href: "/maintenance",
+    href: "/service-fees",
     label: "Hóa đơn",
-    icon: <CreditCard className="w-5 h-5" />,
+    icon: <FileText className="w-5 h-5" />,
   },
   {
     href: "/service-fees",

@@ -108,8 +108,10 @@ export default function WatchmanEmergencyPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Lift Emergency</h1>
-        <p className="text-gray-600">Monitor and manage emergency alerts</p>
+        <h1 className="text-2xl font-bold text-gray-900">Khẩn cấp thang máy</h1>
+        <p className="text-gray-600">
+          Theo dõi và quản lý các cảnh báo khẩn cấp
+        </p>
       </div>
 
       {/* Current Status */}
@@ -125,16 +127,18 @@ export default function WatchmanEmergencyPage() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-red-700">
               <AlertTriangle className="h-6 w-6 animate-pulse" />
-              ACTIVE EMERGENCY
+              KHẨN CẤP ĐANG DIỄN RA
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="bg-white p-4 rounded-lg border border-red-200">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <p className="text-lg font-semibold">{activeEmergency.triggered_by.name}</p>
+                  <p className="text-lg font-semibold">
+                    {activeEmergency.triggered_by.name}
+                  </p>
                   <Badge variant="destructive" className="mt-1">
-                    Flat {activeEmergency.flat_no}
+                    Căn hộ {activeEmergency.flat_no}
                   </Badge>
                 </div>
                 <div className="text-right text-sm text-gray-600">
@@ -142,10 +146,10 @@ export default function WatchmanEmergencyPage() {
                   {getTimeSince(activeEmergency.triggered_at)}
                 </div>
               </div>
-              
+
               {activeEmergency.notes && (
                 <p className="text-gray-700 text-sm mb-3">
-                  Note: {activeEmergency.notes}
+                  Ghi chú: {activeEmergency.notes}
                 </p>
               )}
 
@@ -155,7 +159,7 @@ export default function WatchmanEmergencyPage() {
                   className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 text-white rounded-lg font-medium"
                 >
                   <Phone className="h-5 w-5" />
-                  Call {activeEmergency.triggered_by.phone}
+                  Gọi {activeEmergency.triggered_by.phone}
                 </a>
               )}
             </div>
@@ -168,7 +172,7 @@ export default function WatchmanEmergencyPage() {
                 onClick={() => setShowResolveForm(true)}
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Mark as Resolved
+                Đánh dấu đã xử lý
               </Button>
             ) : (
               <div className="space-y-3 p-4 bg-white rounded-lg border">
@@ -185,14 +189,14 @@ export default function WatchmanEmergencyPage() {
                     className="flex-1"
                     onClick={() => setShowResolveForm(false)}
                   >
-                    Cancel
+                    Hủy
                   </Button>
                   <Button
                     className="flex-1 bg-green-600 hover:bg-green-700"
                     onClick={handleResolve}
                     disabled={resolveLoading}
                   >
-                    {resolveLoading ? 'Resolving...' : 'Confirm Resolve'}
+                    {resolveLoading ? "Resolving..." : "Confirm Resolve"}
                   </Button>
                 </div>
               </div>
@@ -206,8 +210,12 @@ export default function WatchmanEmergencyPage() {
             <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-lg font-semibold text-green-700">All Clear</h3>
-            <p className="text-gray-600 text-sm">No active emergencies</p>
+            <h3 className="text-lg font-semibold text-green-700">
+              Mọi thứ đều an toàn
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Không có tình huống khẩn cấp
+            </p>
           </CardContent>
         </Card>
       )}
@@ -221,10 +229,10 @@ export default function WatchmanEmergencyPage() {
               onClick={() => setConfirmTrigger(true)}
             >
               <Bell className="h-6 w-6 mr-2" />
-              Trigger Emergency
+              Kích hoạt khẩn cấp
             </Button>
             <p className="text-center text-xs text-gray-500 mt-2">
-              Only use in actual emergency situations
+              Chỉ sử dụng trong trường hợp khẩn cấp thực sự
             </p>
           </CardContent>
         </Card>
@@ -235,10 +243,12 @@ export default function WatchmanEmergencyPage() {
         <Card className="border-2 border-yellow-500 bg-yellow-50">
           <CardContent className="py-6 text-center">
             <AlertTriangle className="h-12 w-12 text-yellow-600 mx-auto mb-3" />
-            <h3 className="text-lg font-bold mb-2">Confirm Emergency Trigger</h3>
+            <h3 className="text-lg font-bold mb-2">
+              Xác nhận kích hoạt khẩn cấp
+            </h3>
             <p className="text-gray-700 text-sm mb-4">
-              This will immediately notify all residents and management.
-              Only proceed if there is a real emergency.
+              Hệ thống sẽ ngay lập tức thông báo cho tất cả cư dân và ban quản
+              lý. Chỉ tiếp tục nếu đây là tình huống khẩn cấp thực sự.
             </p>
             <div className="flex gap-3">
               <Button
@@ -246,14 +256,14 @@ export default function WatchmanEmergencyPage() {
                 className="flex-1"
                 onClick={() => setConfirmTrigger(false)}
               >
-                Cancel
+                Hủy
               </Button>
               <Button
                 className="flex-1 bg-red-600 hover:bg-red-700"
                 onClick={handleTrigger}
                 disabled={triggerLoading}
               >
-                {triggerLoading ? 'Triggering...' : 'Confirm Trigger'}
+                {triggerLoading ? "Triggering..." : "Confirm Trigger"}
               </Button>
             </div>
           </CardContent>
@@ -262,56 +272,73 @@ export default function WatchmanEmergencyPage() {
 
       {/* Emergency History */}
       <Card>
-        <CardHeader 
+        <CardHeader
           className="pb-3 cursor-pointer"
           onClick={() => setShowHistory(!showHistory)}
         >
           <CardTitle className="text-lg flex items-center justify-between">
             <span className="flex items-center gap-2">
               <History className="h-5 w-5" />
-              Recent History
+              Lịch sử gần đây
             </span>
             <span className="text-sm font-normal text-gray-500">
-              {showHistory ? '▲ Hide' : '▼ Show'}
+              {showHistory ? "▲ Hide" : "▼ Show"}
             </span>
           </CardTitle>
         </CardHeader>
-        
+
         {showHistory && (
           <CardContent>
             {historyLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="animate-pulse h-16 bg-gray-100 rounded"></div>
+                  <div
+                    key={i}
+                    className="animate-pulse h-16 bg-gray-100 rounded"
+                  ></div>
                 ))}
               </div>
             ) : history.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">No emergency history</p>
+              <p className="text-center text-gray-500 py-4">
+                Không có lịch sử khẩn cấp
+              </p>
             ) : (
               <div className="space-y-3">
                 {history.map((item) => (
                   <div
                     key={item._id}
                     className={`p-3 rounded-lg border ${
-                      item.status === 'active' ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-gray-50'
+                      item.status === "active"
+                        ? "border-red-200 bg-red-50"
+                        : "border-gray-200 bg-gray-50"
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium">{item.triggered_by.name}</p>
-                          <Badge variant={item.status === 'active' ? 'destructive' : 'secondary'}>
+                          <p className="font-medium">
+                            {item.triggered_by.name}
+                          </p>
+                          <Badge
+                            variant={
+                              item.status === "active"
+                                ? "destructive"
+                                : "secondary"
+                            }
+                          >
                             {item.status}
                           </Badge>
                         </div>
                         <p className="text-xs text-gray-500">
-                          Flat {item.flat_no} • {formatDateTime(item.triggered_at)}
+                          Căn hộ {item.flat_no} •{" "}
+                          {formatDateTime(item.triggered_at)}
                         </p>
                       </div>
                     </div>
-                    {item.status === 'resolved' && item.resolved_at && (
+                    {item.status === "resolved" && item.resolved_at && (
                       <p className="text-xs text-green-600 mt-1">
-                        ✓ Resolved by {item.resolved_by?.name} at {formatDateTime(item.resolved_at)}
+                        ✓ Được xử lý bởi {item.resolved_by?.name} lúc{" "}
+                        {formatDateTime(item.resolved_at)}
                       </p>
                     )}
                   </div>
@@ -324,7 +351,7 @@ export default function WatchmanEmergencyPage() {
 
       {/* Refresh */}
       <Button variant="outline" className="w-full" onClick={refresh}>
-        <RefreshCw className="w-4 h-4 mr-2" /> Refresh Status
+        <RefreshCw className="w-4 h-4 mr-2" /> Làm mới trạng thái
       </Button>
     </div>
   );

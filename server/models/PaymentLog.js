@@ -32,19 +32,35 @@ const PaymentLogSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Year is required']
   },
-  razorpay_order_id: {
+  service_fee_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ServiceFee',
+    default: null
+  },
+  payment_type: {
+    type: String,
+    enum: ['service_fee'],
+    default: 'service_fee'
+  },
+  payment_method: {
+    type: String,
+    enum: ['paypal', 'manual'],
+    default: 'manual'
+  },
+  paypal_order_id: {
     type: String
   },
-  razorpay_signature: {
+  paypal_capture_id: {
     type: String
   }
 }, {
   timestamps: true
 });
 
-// Indexes
 PaymentLogSchema.index({ user_id: 1 });
 PaymentLogSchema.index({ flat_no: 1 });
 PaymentLogSchema.index({ payment_date: -1 });
+PaymentLogSchema.index({ service_fee_id: 1 });
+PaymentLogSchema.index({ transaction_id: 1 });
 
 module.exports = mongoose.model('PaymentLog', PaymentLogSchema);

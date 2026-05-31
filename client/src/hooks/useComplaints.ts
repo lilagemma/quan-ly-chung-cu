@@ -3,6 +3,7 @@
 
 import { useState, useCallback } from 'react';
 import api from '@/lib/api';
+import { useToast } from "@/hooks/use-toast";
 
 export interface ComplaintUser {
   _id: string;
@@ -63,6 +64,7 @@ export interface UploadUrlResponse {
   }
 
 export function useComplaints() {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -291,6 +293,61 @@ export function useComplaints() {
     },
     [],
   );
+  
+  const updateComplaint = useCallback(
+    async (id: string, formData: FormData) => {
+      setLoading(true);
+      try {
+        const response = await api.put(`/complaints/${id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        toast({
+          title: "Thành công",
+          description: "Khiếu nại đã được cập nhật",
+        });
+        return response.data;
+      } catch (err: any) {
+        const message =
+          err.response?.data?.message || "Cập nhật khiếu nại thất bại";
+        toast({
+          title: "Lỗi",
+          description: message,
+          variant: "destructive",
+        });
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [toast],
+  );
+
+  const deleteComplaint = useCallback(
+    async (id: string) => {
+      setLoading(true);
+      try {
+        await api.delete(`/complaints/${id}`);
+
+        toast({
+          title: "Thành công",
+          description: "Khiếu nại đã được xóa thành công",
+        });
+        return true;
+      } catch (err: any) {
+        const message = err.response?.data?.message || "Xóa khiếu nại thất bại";
+        toast({
+          title: "Lỗi",
+          description: message,
+          variant: "destructive",
+        });
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [toast],
+  );
 
   return {
     loading,
@@ -304,5 +361,7 @@ export function useComplaints() {
     uploadImage,
     getComplaintStatistics,
     getComplaintStatisticsById,
+    updateComplaint,
+    deleteComplaint,
   };
 }

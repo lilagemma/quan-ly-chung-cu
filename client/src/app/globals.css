@@ -76,3 +76,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes blink-red {
+  0% { background-color: rgba(239, 68, 68, 0.1); }
+  50% { background-color: rgba(239, 68, 68, 0.4); }
+  100% { background-color: rgba(239, 68, 68, 0.1); }
+}
+.blink-overdue {
+  animation: blink-red 1s infinite;
+}
+
+@keyframes blink-yellow {
+  0% { background-color: rgba(234, 179, 8, 0.1); }
+  50% { background-color: rgba(234, 179, 8, 0.4); }
+  100% { background-color: rgba(234, 179, 8, 0.1); }
+}
+.blink-overdue-with-penalty {
+  animation: blink-yellow 1s infinite;
+}

@@ -21,7 +21,6 @@ import {
   LogOut,
   Building2,
   LayoutDashboard,
-  CreditCard,
   MessageSquare,
   AlertTriangle,
   Users,
@@ -57,9 +56,9 @@ const navItems: NavItem[] = [
     icon: <LayoutDashboard className="w-4 h-4" />,
   },
   {
-    href: "/maintenance",
+    href: "/service-fees",
     label: "Phí dịch vụ",
-    icon: <CreditCard className="w-4 h-4" />,
+    icon: <FileText className="w-4 h-4" />,
   },
   {
     href: "/complaints",
@@ -81,7 +80,7 @@ const adminItems: NavItem[] = [
     roles: ["manager", "admin"],
   },
   {
-    href: "/admin/payments",
+    href: "/service-fees",
     label: "Quản lý thanh toán",
     icon: <BarChart3 className="w-4 h-4" />,
     roles: ["manager", "admin"],
