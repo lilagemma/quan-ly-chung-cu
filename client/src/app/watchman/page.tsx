@@ -68,9 +68,9 @@ export default function WatchmanDashboardPage() {
 
     if (!visitorName.trim() || !flatNo || !purpose.trim()) {
       toast({
-        title: 'Missing fields',
-        description: 'Please fill in visitor name, flat number, and purpose',
-        variant: 'destructive',
+        title: "Thiếu thông tin",
+        description: "Vui lòng điền tên khách, số căn hộ và mục đích",
+        variant: "destructive",
       });
       return;
     }
@@ -80,8 +80,8 @@ export default function WatchmanDashboardPage() {
       await createEntry(visitorName, flatNo, purpose, vehicleNumber || undefined);
       
       toast({
-        title: 'Entry logged',
-        description: `${visitorName} visiting Flat ${flatNo}`,
+        title: "Đã ghi nhận",
+        description: `${visitorName} đến căn hộ ${flatNo}`,
       });
 
       // Reset form
@@ -95,9 +95,9 @@ export default function WatchmanDashboardPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to log entry';
       toast({
-        title: 'Failed to log entry',
+        title: "Ghi nhận thất bại",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
       setSubmitting(false);
@@ -108,24 +108,24 @@ export default function WatchmanDashboardPage() {
     try {
       await markOutTime(entryId);
       toast({
-        title: 'Marked out',
-        description: `${visitorName} has exited`,
+        title: "Đã đánh dấu ra",
+        description: `${visitorName} đã rời đi`,
       });
       fetchEntries();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to mark out';
       toast({
-        title: 'Failed to mark out',
+        title: "Đánh dấu ra thất bại",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -146,7 +146,7 @@ export default function WatchmanDashboardPage() {
               </h3>
               <p className="text-sm text-gray-500 mt-1">
                 {activeEmergency
-                  ? `Cảnh báo từ căn hộ ${activeEmergency.flat_no}`
+                  ? `Cảnh báo từ phòng ${activeEmergency.flat_no}`
                   : "Nhấn để gửi cảnh báo cho mọi người"}
               </p>
             </div>
@@ -154,7 +154,7 @@ export default function WatchmanDashboardPage() {
               onTrigger={triggerEmergency}
               hasActiveEmergency={!!activeEmergency}
               triggerLoading={triggerLoading}
-              userFlat="Security"
+              userFlat="Bảo vệ"
             />
           </div>
         </CardContent>
@@ -237,7 +237,7 @@ export default function WatchmanDashboardPage() {
                   onChange={(e) =>
                     setVehicleNumber(e.target.value.toUpperCase())
                   }
-                  placeholder="e.g., GJ05XX1234"
+                  placeholder="VD: GJ05XX1234"
                   disabled={submitting}
                 />
               </div>

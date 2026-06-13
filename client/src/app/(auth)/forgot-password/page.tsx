@@ -331,7 +331,7 @@ export default function ForgotPasswordPage() {
                   Đang xác minh...
                 </>
               ) : (
-                "Verify OTP"
+                "Xác minh OTP"
               )}
             </Button>
 
@@ -395,7 +395,7 @@ export default function ForgotPasswordPage() {
               <Input
                 id="newPassword"
                 type="password"
-                placeholder="Nhập mật khẩu mới "
+                placeholder="Nhập mật khẩu mới"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 disabled={loading}

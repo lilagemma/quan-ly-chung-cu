@@ -301,7 +301,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-3 text-sm">
                 <Phone className="w-4 h-4 text-slate-400" />
                 <span className="text-slate-600">
-                  {user?.phone || "Not provided"}
+                  {user?.phone || "Chưa cung cấp"}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-sm">

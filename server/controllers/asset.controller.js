@@ -52,7 +52,7 @@ exports.getAssetById = async (req, res, next) => {
     if (!asset) {
       return res.status(404).json({
         success: false,
-        message: 'Asset not found'
+        message: "Không tìm thấy tài sản",
       });
     }
 
@@ -79,7 +79,7 @@ exports.createAsset = async (req, res, next) => {
     if (!name || !type) {
       return res.status(400).json({
         success: false,
-        message: 'Name and type are required'
+        message: 'Tên và loại tài sản là bắt buộc'
       });
     }
 
@@ -87,7 +87,7 @@ exports.createAsset = async (req, res, next) => {
     if (!['lift', 'water_pump', 'generator'].includes(type)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid asset type. Must be lift, water_pump, or generator'
+        message: "Loại tài sản không hợp lệ...",
       });
     }
 
@@ -100,7 +100,7 @@ exports.createAsset = async (req, res, next) => {
     if (existingAsset) {
       return res.status(400).json({
         success: false,
-        message: 'An asset with this name and type already exists'
+        message: "Tài sản với tên và loại này đã tồn tại",
       });
     }
 
@@ -115,8 +115,8 @@ exports.createAsset = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Asset created successfully',
-      data: asset
+      message: "Tạo tài sản thành công",
+      data: asset,
     });
   } catch (error) {
     console.error('Error creating asset:', error);
@@ -150,8 +150,8 @@ exports.updateAsset = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Asset updated successfully',
-      data: asset
+      message: "Cập nhật tài sản thành công",
+      data: asset,
     });
   } catch (error) {
     console.error('Error updating asset:', error);
@@ -169,10 +169,13 @@ exports.updateAssetStatus = async (req, res, next) => {
     const { status } = req.body;
 
     // Validate status
-    if (!status || !['working', 'under_maintenance', 'not_working'].includes(status)) {
+    if (
+      !status ||
+      !["working", "under_maintenance", "not_working"].includes(status)
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid status. Must be working, under_maintenance, or not_working'
+        message: "Trạng thái không hợp lệ...",
       });
     }
 
@@ -181,21 +184,21 @@ exports.updateAssetStatus = async (req, res, next) => {
     if (!asset) {
       return res.status(404).json({
         success: false,
-        message: 'Asset not found'
+        message: "Asset not found",
       });
     }
 
-    const oldStatus = asset.status;
+    const oldStatus = asset.status; // ← khai báo oldStatus
     asset.status = status;
     await asset.save();
 
     res.status(200).json({
       success: true,
-      message: `Asset status updated from ${oldStatus} to ${status}`,
-      data: asset
+      message: `Trạng thái tài sản đã được cập nhật từ "${oldStatus}" thành "${status}"`, // ← sửa message
+      data: asset,
     });
   } catch (error) {
-    console.error('Error updating asset status:', error);
+    console.error("Error updating asset status:", error);
     next(error);
   }
 };
@@ -213,7 +216,7 @@ exports.logServiceEntry = async (req, res, next) => {
     if (!description || !done_by) {
       return res.status(400).json({
         success: false,
-        message: 'Description and technician name (done_by) are required'
+        message: 'Mô tả và tên kỹ thuật viên là bắt buộc'
       });
     }
 
@@ -240,7 +243,7 @@ exports.logServiceEntry = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Service entry added successfully',
+      message:'Thêm bản ghi bảo trì thành công',
       data: asset
     });
   } catch (error) {
@@ -269,7 +272,7 @@ exports.deleteAsset = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Asset deleted successfully'
+      message: "Xóa tài sản thành công",
     });
   } catch (error) {
     console.error('Error deleting asset:', error);

@@ -118,3 +118,9 @@ temp/
 **/public/sw.js.map
 **/public/workbox-*.js.map
 **/public/worker-*.js.map
+
+
+# ================================
+# FIREBASE ADMIN SECRET
+# ================================
+server/config/firebase-service-account.json

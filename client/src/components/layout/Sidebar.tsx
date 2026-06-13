@@ -12,13 +12,15 @@ import {
   AlertTriangle,
   Users,
   BarChart3,
+  UserPlus,
+  Activity,
   FileText,
   Settings,
   Home,
   Shield,
   MoreHorizontal,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface NavItem {
   href: string;
@@ -103,16 +105,28 @@ const adminItems: NavItem[] = [
     icon: <Settings className="w-5 h-5" />,
     roles: ["manager", "admin"],
   },
+  {
+    href: "/admin/residents",
+    label: "Quản lý cư dân",
+    icon: <UserPlus className="w-5 h-5" />,
+    roles: ["manager", "admin"],
+  },
+  {
+    href: "/admin/statistics",
+    label: "Thống kê",
+    icon: <Activity className="w-5 h-5" />,
+    roles: ["manager", "admin"],
+  },
 ];
 
 // Mobile bottom navigation items (limited for mobile UX)
 const mobileNavItems: NavItem[] = [
   { href: "/", label: "Trang chủ", icon: <Home className="w-5 h-5" /> },
-  {
-    href: "/service-fees",
-    label: "Hóa đơn",
-    icon: <FileText className="w-5 h-5" />,
-  },
+  // {
+  //   href: "/service-fees",
+  //   label: "Hóa đơn",
+  //   icon: <FileText className="w-5 h-5" />,
+  // },
   {
     href: "/service-fees",
     label: "Phí DV",

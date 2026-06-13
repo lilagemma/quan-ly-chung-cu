@@ -91,7 +91,7 @@ export default function ServiceFeeWidget({
 
         setSummary(stats);
       } catch (error) {
-        console.error("Failed to fetch service fees summary:", error);
+        console.error("Lỗi khi tải tổng hợp phí dịch vụ:", error);
       } finally {
         setLoading(false);
       }

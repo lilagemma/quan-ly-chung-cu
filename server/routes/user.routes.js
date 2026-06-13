@@ -24,4 +24,62 @@ router.post('/watchman', authorize('manager'), userController.createWatchman);
 // DELETE /api/users/:id - Deactivate user (Manager only)
 router.delete('/:id', authorize('manager'), userController.deleteUser);
 
+
+// PUT /api/users/fcm-token
+// router.put('/fcm-token', async (req, res) => {
+
+//   try {
+
+//     const User = require('../models/User');
+
+
+//     const { token } = req.body;
+
+
+//     if (!token) {
+
+//       return res.status(400).json({
+//         message: "FCM token is required"
+//       });
+
+//     }
+
+
+//     await User.findByIdAndUpdate(
+
+//       req.user.id,
+
+//       {
+//         fcmToken: token
+//       }
+
+//     );
+
+
+//     res.json({
+
+//       success: true,
+
+//       message: "Save FCM token successfully"
+
+//     });
+
+
+//   } catch (error) {
+
+
+//     res.status(500).json({
+
+//       message: error.message
+
+//     });
+
+
+//   }
+
+// });
+
+
+router.put("/fcm-token", userController.saveFcmToken);
+
 module.exports = router;

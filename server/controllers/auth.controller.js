@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { generateOTP, getOTPExpiry } = require('../utils/generateOTP');
 const emailService = require('../services/email.service');
+const HouseholdMember = require("../models/HouseholdMember");
 
 // Helper: Generate JWT Token
 const generateToken = (userId) => {
@@ -13,17 +14,33 @@ const generateToken = (userId) => {
 };
 
 // Helper: Set JWT Cookie
+// const setTokenCookie = (res, token) => {
+//   const isProduction = process.env.NODE_ENV === 'production';
+//   const cookieOptions = {
+//     httpOnly: true,
+//     secure: isProduction, // Must be true for sameSite: 'none'
+//     sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-origin cookies
+//     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+//     path: '/'
+//   };
+//   res.cookie('token', token, cookieOptions);
+// };
+
+// Cập nhật hàm setTokenCookie trong auth.controller.js
 const setTokenCookie = (res, token) => {
   const isProduction = process.env.NODE_ENV === 'production';
+  // Quan trọng: Với ngrok, bạn đang ở môi trường "production" ảo, cần cookie secure và sameSite none
+  // Ép buộc các thiết lập an toàn để hoạt động trên ngrok
   const cookieOptions = {
     httpOnly: true,
-    secure: isProduction, // Must be true for sameSite: 'none'
-    sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-origin cookies
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    secure: true,             // BẮT BUỘC với sameSite 'none'
+    sameSite: 'none',         // BẮT BUỘC để cookie hoạt động cross-site
+    maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/'
   };
   res.cookie('token', token, cookieOptions);
 };
+
 
 // Helper: Validate flat number format (101-410)
 const isValidFlatNo = (flatNo) => {
@@ -45,7 +62,8 @@ exports.register = async (req, res, next) => {
     if (!name || !email || !password || !flat_no || !phone) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide all required fields: name, email, password, flat_no, phone'
+        message:
+          "Vui lòng cung cấp đầy đủ: họ tên, email, mật khẩu, số căn hộ, số điện thoại",
       });
     }
 
@@ -53,7 +71,7 @@ exports.register = async (req, res, next) => {
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
-        message: 'Password must be at least 6 characters'
+        message: "Mật khẩu phải có ít nhất 6 ký tự",
       });
     }
 
@@ -61,7 +79,7 @@ exports.register = async (req, res, next) => {
     if (!isValidFlatNo(flat_no)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid flat number. Must be between 101-110, 201-210, 301-310, or 401-410'
+        message: "Số căn hộ không hợp lệ",
       });
     }
 
@@ -70,7 +88,7 @@ exports.register = async (req, res, next) => {
     if (existingEmail) {
       return res.status(400).json({
         success: false,
-        message: 'Email is already registered'
+        message: "Email đã được đăng ký",
       });
     }
 
@@ -79,16 +97,17 @@ exports.register = async (req, res, next) => {
     if (existingFlat) {
       return res.status(400).json({
         success: false,
-        message: 'This flat is already registered'
+        message: "Căn hộ này đã được đăng ký",
       });
     }
 
     // Check if manager exists (residents can only register after manager)
-    const managerExists = await User.findOne({ role: 'manager' });
+    const managerExists = await User.findOne({ role: "manager" });
     if (!managerExists) {
       return res.status(400).json({
         success: false,
-        message: 'Manager must be registered first. Please contact your society manager.'
+        message:
+          "Quản lý phải được đăng ký trước. Vui lòng liên hệ ban quản lý chung cư.",
       });
     }
 
@@ -99,8 +118,25 @@ exports.register = async (req, res, next) => {
       password_hash: password, // Will be hashed by pre-save hook
       flat_no,
       phone,
-      role: 'resident'
+      role: "resident",
     });
+    // Tạo bản ghi HouseholdMember cho chủ hộ mới
+    try {
+      await HouseholdMember.create({
+        flat_no: user.flat_no,
+        full_name: user.name,
+        relationship: "head",
+        is_head: true,
+        phone: user.phone,
+        move_in_date: new Date(),
+        is_active: true,
+        user_id: user._id,
+        note: "Chủ hộ đăng ký qua form",
+      });
+    } catch (err) {
+      console.error("Lỗi khi tạo HouseholdMember:", err);
+      // Không nên throw lỗi vì user đã tạo thành công, nhưng có thể log lại.
+    }
 
     // Generate token
     const token = generateToken(user._id);
@@ -110,13 +146,12 @@ exports.register = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful',
+      message: "Đăng ký thành công",
       data: {
         user: user.toJSON(),
-        token
-      }
+        token,
+      },
     });
-
   } catch (error) {
     // Handle mongoose validation errors
     if (error.name === 'ValidationError') {
@@ -143,7 +178,7 @@ exports.login = async (req, res, next) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide email and password'
+        message: "Vui lòng cung cấp email và mật khẩu",
       });
     }
 
@@ -152,7 +187,7 @@ exports.login = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: "Email hoặc mật khẩu không đúng",
       });
     }
 
@@ -160,7 +195,8 @@ exports.login = async (req, res, next) => {
     if (!user.is_active) {
       return res.status(401).json({
         success: false,
-        message: 'Your account has been deactivated. Please contact the manager.'
+        message:
+          "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản lý.",
       });
     }
 
@@ -181,11 +217,11 @@ exports.login = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: "Đăng nhập thành công",
       data: {
         user: user.toJSON(),
-        token
-      }
+        token,
+      },
     });
 
   } catch (error) {
@@ -200,14 +236,25 @@ exports.login = async (req, res, next) => {
  */
 exports.logout = async (req, res, next) => {
   try {
-    res.cookie('token', '', {
+    // res.cookie('token', '', {
+    //   httpOnly: true,
+    //   expires: new Date(0)
+    // });
+    res.cookie("token", "", {
       httpOnly: true,
-      expires: new Date(0)
+
+      secure: true,
+
+      sameSite: "none",
+
+      expires: new Date(0),
+
+      path: "/",
     });
 
     res.status(200).json({
       success: true,
-      message: 'Logged out successfully'
+      message: "Đăng xuất thành công",
     });
 
   } catch (error) {
@@ -228,7 +275,7 @@ exports.getCurrentUser = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "Không tìm thấy người dùng",
       });
     }
 
@@ -256,7 +303,7 @@ exports.managerSetup = async (req, res, next) => {
     if (managerExists) {
       return res.status(400).json({
         success: false,
-        message: 'Manager is already registered. This is a one-time setup.'
+        message: "Quản lý đã được đăng ký. Đây là thiết lập một lần duy nhất.",
       });
     }
 
@@ -264,7 +311,8 @@ exports.managerSetup = async (req, res, next) => {
     if (!name || !email || !password || !flat_no || !phone) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide all required fields: name, email, password, flat_no, phone'
+        message:
+          "Vui lòng cung cấp đầy đủ: họ tên, email, mật khẩu, số căn hộ, số điện thoại",
       });
     }
 
@@ -272,7 +320,7 @@ exports.managerSetup = async (req, res, next) => {
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
-        message: 'Password must be at least 6 characters'
+        message: "Mật khẩu phải có ít nhất 6 ký tự",
       });
     }
 
@@ -280,7 +328,7 @@ exports.managerSetup = async (req, res, next) => {
     if (!isValidFlatNo(flat_no)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid flat number. Must be between 101-110, 201-210, 301-310, or 401-410'
+        message: "Số căn hộ không hợp lệ.",
       });
     }
 
@@ -302,7 +350,7 @@ exports.managerSetup = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Manager setup successful. Welcome!',
+      message: 'Thiết lập quản lý thành công. Chào mừng!',
       data: {
         user: manager.toJSON(),
         token
@@ -353,7 +401,7 @@ exports.forgotPassword = async (req, res, next) => {
     if (!email) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide your email address'
+        message: "Vui lòng cung cấp địa chỉ email của bạn",
       });
     }
 
@@ -362,7 +410,7 @@ exports.forgotPassword = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'No account found with this email address'
+        message: "Không tìm thấy tài khoản với địa chỉ email này",
       });
     }
 
@@ -370,7 +418,7 @@ exports.forgotPassword = async (req, res, next) => {
     if (!user.is_active) {
       return res.status(403).json({
         success: false,
-        message: 'This account has been deactivated'
+        message: "Tài khoản này đã bị vô hiệu hóa",
       });
     }
 
@@ -400,17 +448,17 @@ exports.forgotPassword = async (req, res, next) => {
       console.error('Failed to send OTP email:', emailError);
       return res.status(500).json({
         success: false,
-        message: 'Failed to send OTP email. Please try again later.'
+        message: "Gửi email OTP thất bại. Vui lòng thử lại sau.",
       });
     }
 
     res.status(200).json({
       success: true,
-      message: 'OTP sent to your email address',
+      message: "Mã OTP đã được gửi đến email của bạn",
       data: {
         email: user.email,
-        expiryMinutes: parseInt(process.env.OTP_EXPIRY_MINUTES) || 10
-      }
+        expiryMinutes: parseInt(process.env.OTP_EXPIRY_MINUTES) || 10,
+      },
     });
 
   } catch (error) {
@@ -431,7 +479,7 @@ exports.verifyOTP = async (req, res, next) => {
     if (!email || !otp) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide email and OTP'
+        message: "Vui lòng cung cấp email và mã OTP",
       });
     }
 
@@ -440,7 +488,7 @@ exports.verifyOTP = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'No account found with this email address'
+        message: "Không tìm thấy tài khoản với địa chỉ email này",
       });
     }
 
@@ -448,7 +496,7 @@ exports.verifyOTP = async (req, res, next) => {
     if (!user.otp || !user.otp_expires) {
       return res.status(400).json({
         success: false,
-        message: 'No OTP request found. Please request a new OTP.'
+        message: "Không tìm thấy yêu cầu OTP. Vui lòng yêu cầu mã OTP mới.",
       });
     }
 
@@ -461,7 +509,7 @@ exports.verifyOTP = async (req, res, next) => {
 
       return res.status(400).json({
         success: false,
-        message: 'OTP has expired. Please request a new one.'
+        message: "Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.",
       });
     }
 
@@ -469,7 +517,7 @@ exports.verifyOTP = async (req, res, next) => {
     if (user.otp !== otp) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid OTP. Please check and try again.'
+        message: "Mã OTP không chính xác. Vui lòng kiểm tra và thử lại.",
       });
     }
 
@@ -482,11 +530,11 @@ exports.verifyOTP = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'OTP verified successfully',
+      message: "Xác minh OTP thành công",
       data: {
         resetToken,
-        email: user.email
-      }
+        email: user.email,
+      },
     });
 
   } catch (error) {
@@ -508,7 +556,7 @@ exports.resetPassword = async (req, res, next) => {
     if (!email || !resetToken || !newPassword || !confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide all required fields'
+        message: "Vui lòng cung cấp đầy đủ thông tin",
       });
     }
 
@@ -516,7 +564,7 @@ exports.resetPassword = async (req, res, next) => {
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: 'Passwords do not match'
+        message: "Mật khẩu xác nhận không khớp",
       });
     }
 
@@ -524,7 +572,7 @@ exports.resetPassword = async (req, res, next) => {
     if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
-        message: 'Password must be at least 6 characters'
+        message: "Mật khẩu phải có ít nhất 6 ký tự",
       });
     }
 
@@ -535,7 +583,8 @@ exports.resetPassword = async (req, res, next) => {
     } catch (tokenError) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired reset token. Please request a new OTP.'
+        message:
+          "Token đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu mã OTP mới.",
       });
     }
 
@@ -543,7 +592,7 @@ exports.resetPassword = async (req, res, next) => {
     if (decoded.purpose !== 'password_reset') {
       return res.status(400).json({
         success: false,
-        message: 'Invalid reset token'
+        message: "Token đặt lại không hợp lệ",
       });
     }
 
@@ -556,7 +605,7 @@ exports.resetPassword = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "Không tìm thấy người dùng",
       });
     }
 
@@ -579,7 +628,8 @@ exports.resetPassword = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Password reset successful. You can now login with your new password.'
+      message:
+        "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.",
     });
 
   } catch (error) {

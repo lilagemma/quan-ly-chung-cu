@@ -54,9 +54,12 @@ export function useEmergency() {
       setActiveEmergency(response.data.data || null);
       setError(null);
     } catch (err: unknown) {
-      console.error('Error checking emergency:', err);
+      console.error("Lỗi khi kiểm tra khẩn cấp:", err);
       const axiosError = err as { response?: { data?: { message?: string } } };
-      setError(axiosError.response?.data?.message || 'Failed to check emergency status');
+      setError(
+        axiosError.response?.data?.message ||
+          "Không thể kiểm tra trạng thái khẩn cấp",
+      );
       setActiveEmergency(null);
     } finally {
       setLoading(false);
@@ -73,7 +76,8 @@ export function useEmergency() {
       return response.data;
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
-      const message = axiosError.response?.data?.message || 'Failed to trigger emergency';
+      const message =
+        axiosError.response?.data?.message || "Kích hoạt khẩn cấp thất bại";
       setError(message);
       throw new Error(message);
     } finally {
@@ -91,7 +95,8 @@ export function useEmergency() {
       return response.data;
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
-      const message = axiosError.response?.data?.message || 'Failed to resolve emergency';
+      const message =
+        axiosError.response?.data?.message || "Xử lý khẩn cấp thất bại";
       setError(message);
       throw new Error(message);
     } finally {
@@ -105,9 +110,11 @@ export function useEmergency() {
       const response = await api.get(`/emergency/history?page=${page}&limit=${limit}`);
       return response.data;
     } catch (err: unknown) {
-      console.error('Error fetching emergency history:', err);
+      console.error("Lỗi khi tải lịch sử khẩn cấp:", err);
       const axiosError = err as { response?: { data?: { message?: string } } };
-      throw new Error(axiosError.response?.data?.message || 'Failed to fetch history');
+      throw new Error(
+        axiosError.response?.data?.message || "Không thể tải lịch sử khẩn cấp",
+      );
     }
   }, []);
 
@@ -118,12 +125,13 @@ export function useEmergency() {
         const response = await api.get(`/emergency/statistics`);
         return response.data.data;
       } catch (err: unknown) {
-        console.error("Error fetching emergency statistics:", err);
+        console.error("Lỗi khi tải thống kê khẩn cấp:", err);
         const axiosError = err as {
           response?: { data?: { message?: string } };
         };
         throw new Error(
-          axiosError.response?.data?.message || "Failed to fetch statistics",
+          axiosError.response?.data?.message ||
+            "Không thể tải thống kê khẩn cấp",
         );
       }
     },

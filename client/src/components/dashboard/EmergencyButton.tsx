@@ -40,7 +40,7 @@ export default function EmergencyButton({
       setIsDialogOpen(false);
       setNotes('');
     } catch (error) {
-      console.error('Failed to trigger emergency:', error);
+console.error("Kích hoạt khẩn cấp thất bại:", error);
     } finally {
       setIsLoading(false);
     }

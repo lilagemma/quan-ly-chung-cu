@@ -64,7 +64,7 @@ export default function AdminComplaintsPage() {
       setPagination(response.pagination);
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Lỗi",
         description: error.message || "Không thể lấy khiếu nại",
         variant: "destructive",
       });
@@ -100,7 +100,7 @@ export default function AdminComplaintsPage() {
       fetchComplaints(pagination.current);
     } catch (error: any) {
       toast({
-        title: "Update failed",
+        title: "Cập nhật thất bại",
         description: error.message || "Không thể cập nhật trạng thái khiếu nại",
         variant: "destructive",
       });
@@ -309,7 +309,7 @@ export default function AdminComplaintsPage() {
                                   src={
                                     complaint.image_url.startsWith("http")
                                       ? complaint.image_url
-                                      : `http://localhost:4000/${complaint.image_url.replace(/\\/g, "/")}`
+                                      : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/${complaint.image_url.replace(/\\/g, "/")}`
                                   }
                                   alt="Complaint"
                                   fill
@@ -352,9 +352,9 @@ export default function AdminComplaintsPage() {
               {pagination.pages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                   <p className="text-sm text-gray-500">
-                    Showing {(pagination.current - 1) * 10 + 1} to{" "}
-                    {Math.min(pagination.current * 10, pagination.total)} of{" "}
-                    {pagination.total}
+                    Hiển thị {(pagination.current - 1) * 10 + 1} đến{" "}
+                    {Math.min(pagination.current * 10, pagination.total)} trong
+                    tổng số {pagination.total}
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -363,7 +363,7 @@ export default function AdminComplaintsPage() {
                       disabled={pagination.current === 1}
                       onClick={() => fetchComplaints(pagination.current - 1)}
                     >
-                      Previous
+                      Trước
                     </Button>
                     <Button
                       variant="outline"
@@ -371,7 +371,7 @@ export default function AdminComplaintsPage() {
                       disabled={pagination.current === pagination.pages}
                       onClick={() => fetchComplaints(pagination.current + 1)}
                     >
-                      Next
+                      Tiếp
                     </Button>
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export default function AdminComplaintsPage() {
                     src={
                       selectedComplaint.image_url.startsWith("http")
                         ? selectedComplaint.image_url
-                        : `http://localhost:4000/${selectedComplaint.image_url.replace(/\\/g, "/")}`
+                        : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/${selectedComplaint.image_url.replace(/\\/g, "/")}`
                     }
                     alt="Ảnh khiếu nại"
                     fill
@@ -440,7 +440,7 @@ export default function AdminComplaintsPage() {
                 <Label htmlFor="status">Cập nhật trạng thái</Label>
                 <Select value={newStatus} onValueChange={setNewStatus}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select new status" />
+                    <SelectValue placeholder="Chọn trạng thái mới" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="open">Đang mở</SelectItem>
@@ -457,7 +457,7 @@ export default function AdminComplaintsPage() {
                   id="adminNotes"
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="Thêm ghi chú cho cư dân (cư dân sẽ thấy nội dung này trong email thông báo"
+                  placeholder="Thêm ghi chú cho cư dân "
                   rows={3}
                 />
               </div>
@@ -471,7 +471,17 @@ export default function AdminComplaintsPage() {
             >
               Hủy
             </Button>
-            <Button onClick={handleStatusUpdate} disabled={updateLoading}>
+            <Button
+              onClick={handleStatusUpdate}
+              disabled={
+                updateLoading || selectedComplaint?.status === "resolved"
+              }
+              title={
+                selectedComplaint?.status === "resolved"
+                  ? "Khiếu nại đã được giải quyết, không thể cập nhật"
+                  : "Cập nhật trạng thái khiếu nại"
+              }
+            >
               {updateLoading ? (
                 <>
                   <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>

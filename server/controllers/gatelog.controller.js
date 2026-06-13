@@ -13,7 +13,7 @@ exports.createEntry = async (req, res, next) => {
     if (!visitor_name || !flat_no_visiting || !purpose) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide visitor_name, flat_no_visiting, and purpose'
+        message: "Vui lòng cung cấp tên khách, số căn hộ đến và mục đích",
       });
     }
 
@@ -32,8 +32,8 @@ exports.createEntry = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Visitor entry logged successfully',
-      data: entry
+      message: "Đã ghi nhận khách vào cổng",
+      data: entry,
     });
   } catch (error) {
     next(error);
@@ -92,7 +92,7 @@ exports.markOutTime = async (req, res, next) => {
     if (!entry) {
       return res.status(404).json({
         success: false,
-        message: 'Gate log entry not found'
+        message: "Không tìm thấy bản ghi cổng",
       });
     }
 
@@ -100,7 +100,7 @@ exports.markOutTime = async (req, res, next) => {
     if (entry.out_time) {
       return res.status(400).json({
         success: false,
-        message: 'Visitor has already been marked out'
+        message: "Khách đã được đánh dấu ra cổng trước đó",
       });
     }
 
@@ -112,8 +112,8 @@ exports.markOutTime = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Visitor marked as exited',
-      data: entry
+      message: "Đã đánh dấu khách ra cổng",
+      data: entry,
     });
   } catch (error) {
     next(error);

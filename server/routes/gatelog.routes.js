@@ -16,6 +16,11 @@ router.get('/today', authorize('watchman', 'manager', 'admin'), gatelogControlle
 router.put('/:id/out', authorize('watchman'), gatelogController.markOutTime);
 
 // GET /api/gatelog/history - Get gate log history (Manager, Admin)
-router.get('/history', authorize('manager', 'admin'), gatelogController.getHistory);
+// router.get('/history', authorize('manager', 'admin'), gatelogController.getHistory);
+router.get(
+  "/history",
+  authorize("watchman", "manager", "admin"),
+  gatelogController.getHistory,
+);
 
 module.exports = router;

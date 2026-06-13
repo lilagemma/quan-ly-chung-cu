@@ -2,22 +2,22 @@ const cron = require('node-cron');
 const { applyLateFees } = require('./lateFeeApplier');
 
 const initCronJobs = () => {
-  console.log('Initializing cron jobs...');
+  console.log('Đang khởi tạo các tác vụ cron...');
 
   cron.schedule('0 0 * * *', async () => {
-    console.log('Running: Apply late fees to overdue service fee invoices');
+    console.log("Đang thực thi: Tính phí trễ cho các hóa đơn dịch vụ quá hạn");
     try {
       await applyLateFees();
     } catch (err) {
-      console.error('Cron job failed - applyLateFees:', err.message);
+      console.error("Tác vụ cron thất bại - applyLateFees:", err.message);
     }
   }, {
     scheduled: true,
     timezone: 'Asia/Ho_Chi_Minh'
   });
 
-  console.log('Cron jobs initialized:');
-  console.log('   - Service fee late charge application: Daily at 00:00');
+  console.log('Các tác vụ cron đã được khởi tạo:');
+  console.log(" - Áp dụng phí trễ hóa đơn dịch vụ: Hàng ngày lúc 00:00");
 };
 
 module.exports = initCronJobs;

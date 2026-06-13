@@ -95,7 +95,7 @@ export default function WatchmanLayout({
               </div>
               <div>
                 <p className="font-bold">KHẨN CẤP ĐANG DIỄN RA</p>
-                <p className="text-sm">Căn hộ {activeEmergency.flat_no}</p>
+                <p className="text-sm">Phòng {activeEmergency.flat_no}</p>
               </div>
             </div>
             <Link href="/watchman/emergency">

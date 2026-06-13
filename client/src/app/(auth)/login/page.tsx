@@ -11,6 +11,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, Lock, ArrowRight, Loader2, LogIn } from 'lucide-react';
 
+import { requestNotificationPermission } from "@/firebase/notification";
+
 export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, loading: authLoading } = useAuth();
@@ -47,12 +49,43 @@ export default function LoginPage() {
     try {
       const result = await login({ email, password });
       
+      // if (result.success) {
+      //   // Redirect based on user role
+      //   if (result.user?.role === 'watchman') {
+      //     router.push('/watchman');
+      //   } else {
+      //     router.push('/');
+      //   }
+      // } 
       if (result.success) {
+        // lấy token nhận thông báo firebase
+        const token = await requestNotificationPermission();
+
+        console.log("FCM TOKEN:", token);
+
+        if (token) {
+          console.log("Đang gửi token lên server");
+
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/fcm-token`, {
+            method: "PUT",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            credentials: "include",
+
+            body: JSON.stringify({
+              token: token,
+            }),
+          });
+        }
+
         // Redirect based on user role
-        if (result.user?.role === 'watchman') {
-          router.push('/watchman');
+        if (result.user?.role === "watchman") {
+          router.push("/watchman");
         } else {
-          router.push('/');
+          router.push("/");
         }
       } else {
         setError(result.message);

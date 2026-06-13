@@ -62,7 +62,7 @@ export default function AssetStatusWidget({
         const response = await getAssets();
         setAssets(response.data);
       } catch (error) {
-        console.error('Failed to fetch assets:', error);
+        console.error("Lỗi khi tải tài sản:", error);
       } finally {
         setLoading(false);
       }

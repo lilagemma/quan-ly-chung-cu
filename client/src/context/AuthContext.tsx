@@ -70,10 +70,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(response.data.data.user);
         return { success: true, message: response.data.message, user: response.data.data.user };
       }
-      return { success: false, message: response.data.message || 'Login failed' };
+      return {
+        success: false,
+        message: response.data.message || "Đăng nhập thất bại",
+      };
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { message?: string } } };
-      const message = axiosError.response?.data?.message || 'Login failed. Please try again.';
+      const message =
+        axiosError.response?.data?.message ||
+        "Đăng nhập thất bại. Vui lòng thử lại.";
       return { success: false, message };
     }
   };
@@ -86,10 +91,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Don't auto-login, redirect to login page
         return { success: true, message: response.data.message };
       }
-      return { success: false, message: response.data.message || 'Registration failed' };
+      return { success: false, message: response.data.message || 'Đăng ký thất bại' };
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { message?: string } } };
-      const message = axiosError.response?.data?.message || 'Registration failed. Please try again.';
+      const message =
+        axiosError.response?.data?.message ||
+        "Đăng ký thất bại. Vui lòng thử lại.";
       return { success: false, message };
     }
   };
@@ -106,10 +113,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(response.data.data.user);
         return { success: true, message: response.data.message, user: response.data.data.user };
       }
-      return { success: false, message: response.data.message || 'Setup failed' };
+      return {
+        success: false,
+        message: response.data.message || "Thiết lập thất bại",
+      };
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { message?: string } } };
-      const message = axiosError.response?.data?.message || 'Manager setup failed. Please try again.';
+      const message =
+        axiosError.response?.data?.message ||
+        "Thiết lập tài khoản quản lý thất bại. Vui lòng thử lại.";
       return { success: false, message };
     }
   };

@@ -1,63 +1,100 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { useGateLog, GateLogEntry } from '@/hooks/useGateLog';
-import { ClipboardList, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { useGateLog, GateLogEntry } from "@/hooks/useGateLog";
+import { ClipboardList, RefreshCw, Search } from "lucide-react";
 
 export default function GateLogPage() {
   const { toast } = useToast();
-  const { getTodayEntries, markOutTime } = useGateLog();
+  const { getHistory, markOutTime } = useGateLog();
 
+  // Hàm lấy ngày hiện tại theo giờ địa phương, bỏ qua giờ
+  const getTodayLocal = () => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  };
+
+  const [selectedDate, setSelectedDate] = useState<Date>(getTodayLocal());
   const [entries, setEntries] = useState<GateLogEntry[]>([]);
   const [stats, setStats] = useState({ total: 0, inside: 0, exited: 0 });
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'inside' | 'exited'>('all');
+  const [filter, setFilter] = useState<"all" | "inside" | "exited">("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch entries
-  useEffect(() => {
-    fetchEntries();
-    // Auto refresh every 30 seconds
-    const interval = setInterval(fetchEntries, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  // Format YYYY-MM-DD cho input và API
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
-  const fetchEntries = async () => {
+  // Parse từ YYYY-MM-DD sang Date local (00:00:00)
+  const parseLocalDate = (dateStr: string): Date => {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  // Hiển thị dd/mm/yyyy
+  const formatDisplayDate = (date: Date): string => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const fetchEntries = async (date: Date) => {
+    setLoading(true);
     try {
-      const response = await getTodayEntries();
-      setEntries(response.data);
-      setStats(response.stats);
-    } catch (error) {
-      console.error('Failed to fetch entries:', error);
+      const formattedDate = formatLocalDate(date);
+      const response = await getHistory(1, 500, formattedDate);
+      const data = response.data;
+      setEntries(data);
+      const total = data.length;
+      const inside = data.filter((e: GateLogEntry) => !e.out_time).length;
+      const exited = data.filter((e: GateLogEntry) => e.out_time).length;
+      setStats({ total, inside, exited });
+    } catch (error: any) {
+      toast({
+        title: "Lỗi",
+        description: error.message || "Không thể tải dữ liệu",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchEntries(selectedDate);
+  }, [selectedDate]);
+
   const handleMarkOut = async (entryId: string, visitorName: string) => {
     try {
       await markOutTime(entryId);
       toast({
-        title: 'Marked out',
-        description: `${visitorName} has exited`,
+        title: "Đã đánh dấu ra",
+        description: `${visitorName} đã rời đi`,
       });
-      fetchEntries();
+      fetchEntries(selectedDate);
     } catch (error: any) {
       toast({
-        title: 'Failed to mark out',
+        title: "Lỗi",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('vi-VN', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -65,27 +102,68 @@ export default function GateLogPage() {
     const start = new Date(inTime).getTime();
     const end = outTime ? new Date(outTime).getTime() : Date.now();
     const minutes = Math.floor((end - start) / 60000);
-    
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 60) return `${minutes} phút`;
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
+    return `${hours} giờ ${mins} phút`;
   };
 
-  // Filter entries
-  const filteredEntries = entries.filter((entry) => {
-    if (filter === 'inside') return !entry.out_time;
-    if (filter === 'exited') return entry.out_time;
+  // Lọc theo trạng thái (inside/outside/all)
+  const filteredByStatus = entries.filter((entry) => {
+    if (filter === "inside") return !entry.out_time;
+    if (filter === "exited") return entry.out_time;
     return true;
   });
 
+  // Tìm kiếm theo tên, căn hộ, biển số
+  const searchedEntries = filteredByStatus.filter((entry) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.trim().toLowerCase();
+    return (
+      entry.visitor_name.toLowerCase().includes(term) ||
+      entry.flat_no_visiting.toLowerCase().includes(term) ||
+      (entry.vehicle_number &&
+        entry.vehicle_number.toLowerCase().includes(term))
+    );
+  });
+
+  const isToday = (date: Date) => {
+    const today = getTodayLocal();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
+  const handleTodayClick = () => {
+    setSelectedDate(getTodayLocal());
+  };
+
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Nhật ký cổng ra vào
-        </h1>
-        <p className="text-gray-600">Danh sách khách ra vào hôm nay</p>
+      <div className="flex flex-wrap justify-between items-start gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Nhật ký cổng ra vào
+          </h1>
+          <p className="text-gray-600">
+            {isToday(selectedDate)
+              ? "Hôm nay"
+              : `Ngày ${formatDisplayDate(selectedDate)}`}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleTodayClick}>
+            Hôm nay
+          </Button>
+          <input
+            type="date"
+            value={formatLocalDate(selectedDate)}
+            onChange={(e) => setSelectedDate(parseLocalDate(e.target.value))}
+            className="px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
       </div>
 
       {/* Stats */}
@@ -119,13 +197,25 @@ export default function GateLogPage() {
         </Card>
       </div>
 
-      {/* Entries List */}
+      {/* Thanh tìm kiếm */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          placeholder="Tìm theo tên, căn hộ hoặc biển số..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
+      {/* Danh sách */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">
-            {filter === "all" && "All Visitors"}
-            {filter === "inside" && "Currently Inside"}
-            {filter === "exited" && "Already Exited"}
+            {filter === "all" && "Tất cả khách"}
+            {filter === "inside" && "Đang ở trong"}
+            {filter === "exited" && "Đã rời đi"}
+            {searchTerm && ` (kết quả: ${searchedEntries.length})`}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -138,14 +228,18 @@ export default function GateLogPage() {
                 ></div>
               ))}
             </div>
-          ) : filteredEntries.length === 0 ? (
+          ) : searchedEntries.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <ClipboardList className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-              <p>Không có dữ liệu</p>
+              <p>
+                {searchTerm
+                  ? "Không tìm thấy kết quả phù hợp"
+                  : "Không có dữ liệu cho ngày này"}
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredEntries.map((entry) => (
+              {searchedEntries.map((entry) => (
                 <div
                   key={entry._id}
                   className={`p-4 rounded-lg border ${
@@ -206,14 +300,10 @@ export default function GateLogPage() {
         </CardContent>
       </Card>
 
-      {/* Refresh button */}
       <Button
         variant="outline"
         className="w-full"
-        onClick={() => {
-          setLoading(true);
-          fetchEntries();
-        }}
+        onClick={() => fetchEntries(selectedDate)}
       >
         <RefreshCw className="w-4 h-4 mr-2" /> Làm mới
       </Button>

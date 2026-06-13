@@ -62,7 +62,8 @@ export function useAssets() {
       const response = await api.get(`/assets${queryString ? `?${queryString}` : ''}`);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to fetch assets';
+      const message =
+        err.response?.data?.message || "Không thể tải danh sách tài sản";
       setError(message);
       throw new Error(message);
     } finally {
@@ -78,7 +79,8 @@ export function useAssets() {
       const response = await api.get(`/assets/${id}`);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to fetch asset';
+      const message =
+        err.response?.data?.message || "Không thể tải thông tin tài sản";
       setError(message);
       throw new Error(message);
     } finally {
@@ -94,7 +96,7 @@ export function useAssets() {
       const response = await api.post('/assets', data);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to create asset';
+      const message = err.response?.data?.message || "Không thể tạo tài sản";
       setError(message);
       throw new Error(message);
     } finally {
@@ -113,7 +115,8 @@ export function useAssets() {
       const response = await api.put(`/assets/${id}`, data);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to update asset';
+      const message =
+        err.response?.data?.message || "Không thể cập nhật tài sản";
       setError(message);
       throw new Error(message);
     } finally {
@@ -132,7 +135,8 @@ export function useAssets() {
       const response = await api.put(`/assets/${id}/status`, { status });
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to update asset status';
+      const message =
+        err.response?.data?.message || "Không thể cập nhật trạng thái tài sản";
       setError(message);
       throw new Error(message);
     } finally {
@@ -151,7 +155,8 @@ export function useAssets() {
       const response = await api.post(`/assets/${id}/service`, data);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to add service entry';
+      const message =
+        err.response?.data?.message || "Không thể thêm bản ghi bảo trì";
       setError(message);
       throw new Error(message);
     } finally {
@@ -167,7 +172,7 @@ export function useAssets() {
       const response = await api.delete(`/assets/${id}`);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to delete asset';
+      const message = err.response?.data?.message || "Không thể xóa tài sản";
       setError(message);
       throw new Error(message);
     } finally {

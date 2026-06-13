@@ -35,7 +35,7 @@ export const ASSET_STATUS = {
 } as const;
 
 export const SOCIETY_NAME = 'MyCT2';
-export const SOCIETY_TAGLINE = 'Quan ly chung cu';
+export const SOCIETY_TAGLINE = "Quản lý chung cư";
 
 export const FLAT_NUMBERS = [
   '101', '102', '103', '104', '105', '106', '107', '108', '109', '110',

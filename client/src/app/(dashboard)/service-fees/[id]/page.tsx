@@ -109,7 +109,7 @@ export default function ServiceFeeDetail() {
     if (!fee) return;
 
     if (!window.paypal) {
-      alert("PayPal SDK chua san sang. Vui long tai lai trang.");
+      alert("PayPal SDK chưa sẵn sàng. Vui lòng tải lại trang.");
       return;
     }
 
@@ -132,7 +132,7 @@ export default function ServiceFeeDetail() {
           },
           onError: (err: unknown) => {
             console.error("PayPal service fee error:", err);
-            alert("Thanh toan PayPal that bai.");
+            alert("Thanh toán PayPal thất bại.");
           },
         })
         .render("#service-fee-detail-paypal");

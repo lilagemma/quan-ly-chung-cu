@@ -88,7 +88,7 @@ export function useComplaints() {
         return response.data;
       } catch (err: any) {
         const message =
-          err.response?.data?.message || "Failed to fetch complaints";
+          err.response?.data?.message || "Không thể tải danh sách khiếu nại";
         setError(message);
         throw new Error(message);
       } finally {
@@ -118,7 +118,7 @@ export function useComplaints() {
         return response.data;
       } catch (err: any) {
         const message =
-          err.response?.data?.message || "Failed to fetch complaints";
+          err.response?.data?.message || "Không thể tải danh sách khiếu nại";
         setError(message);
         throw new Error(message);
       } finally {
@@ -138,7 +138,7 @@ export function useComplaints() {
         return response.data;
       } catch (err: any) {
         const message =
-          err.response?.data?.message || "Failed to fetch complaint";
+          err.response?.data?.message || "Không thể tải danh sách khiếu nại";
         setError(message);
         throw new Error(message);
       } finally {
@@ -166,7 +166,7 @@ export function useComplaints() {
         return response.data;
       } catch (err: any) {
         const message =
-          err.response?.data?.message || "Failed to create complaint";
+          err.response?.data?.message || "Không thể tạo khiếu nại";
         setError(message);
         throw new Error(message);
       } finally {
@@ -193,7 +193,7 @@ export function useComplaints() {
         return response.data;
       } catch (err: any) {
         const message =
-          err.response?.data?.message || "Failed to update complaint status";
+          err.response?.data?.message || "Không thể cập nhật trạng thái khiếu nại";
         setError(message);
         throw new Error(message);
       } finally {
@@ -210,7 +210,8 @@ export function useComplaints() {
       const response = await api.post("/complaints/upload-url");
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || "Failed to get upload URL";
+      const message =
+        err.response?.data?.message || "Không thể lấy URL tải ảnh lên";
       setError(message);
       throw new Error(message);
     }
@@ -244,7 +245,7 @@ export function useComplaints() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to upload image");
+          throw new Error(errorData.message || "Tải ảnh lên thất bại");
         }
 
         const data = await response.json();
@@ -270,7 +271,8 @@ export function useComplaints() {
           response?: { data?: { message?: string } };
         };
         throw new Error(
-          axiosError.response?.data?.message || "Failed to fetch statistics",
+          axiosError.response?.data?.message ||
+            "Không thể tải thống kê khiếu nại",
         );
       }
     }, []);
@@ -282,12 +284,13 @@ export function useComplaints() {
         const response = await api.get(`/complaints/statistics/${id}`);
         return response.data.data;
       } catch (err: unknown) {
-        console.error("Error fetching complaint statistics:", err);
+        console.error("Lỗi khi tải thống kê khiếu nại:", err);
         const axiosError = err as {
           response?: { data?: { message?: string } };
         };
         throw new Error(
-          axiosError.response?.data?.message || "Failed to fetch statistics",
+          axiosError.response?.data?.message ||
+            "Không thể tải thống kê khiếu nại",
         );
       }
     },

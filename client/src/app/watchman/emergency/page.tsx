@@ -25,8 +25,20 @@ export default function WatchmanEmergencyPage() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
   const [confirmTrigger, setConfirmTrigger] = useState(false);
-  const [resolveNotes, setResolveNotes] = useState('');
+  const [resolveNotes, setResolveNotes] = useState("");
   const [showResolveForm, setShowResolveForm] = useState(false);
+
+  // Hàm chuyển đổi trạng thái khẩn cấp sang tiếng Việt
+  const getEmergencyStatusLabel = (status: string) => {
+    switch (status) {
+      case "active":
+        return "ĐANG HOẠT ĐỘNG";
+      case "resolved":
+        return "ĐÃ XỬ LÝ";
+      default:
+        return status;
+    }
+  };
 
   // Fetch history
   const fetchHistory = async () => {
@@ -35,7 +47,7 @@ export default function WatchmanEmergencyPage() {
       const response = await getEmergencyHistory(1, 10);
       setHistory(response.data);
     } catch (error) {
-      console.error('Failed to fetch history:', error);
+      console.error("Lỗi khi tải lịch sử:", error);
     } finally {
       setHistoryLoading(false);
     }
@@ -49,48 +61,51 @@ export default function WatchmanEmergencyPage() {
 
   const handleTrigger = async () => {
     try {
-      await triggerEmergency('Triggered by watchman');
+      await triggerEmergency("Được kích hoạt bởi bảo vệ");
       toast({
-        title: 'Emergency Triggered!',
-        description: 'All residents have been notified',
+        title: "Đã kích hoạt khẩn cấp!",
+        description: "Tất cả cư dân đã được thông báo",
       });
       setConfirmTrigger(false);
     } catch (error: any) {
       toast({
-        title: 'Failed to trigger',
+        title: "Kích hoạt thất bại",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
 
   const handleResolve = async () => {
     if (!activeEmergency) return;
-    
+
     try {
-      await resolveEmergency(activeEmergency._id, resolveNotes || 'Resolved by watchman');
+      await resolveEmergency(
+        activeEmergency._id,
+        resolveNotes || "Đã xử lý bởi bảo vệ",
+      );
       toast({
-        title: 'Emergency Resolved',
-        description: 'Status updated to resolved',
+        title: "Đã xử lý khẩn cấp",
+        description: "Trạng thái đã được cập nhật",
       });
       setShowResolveForm(false);
-      setResolveNotes('');
+      setResolveNotes("");
     } catch (error: any) {
       toast({
-        title: 'Failed to resolve',
+        title: "Xử lý thất bại",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleString("vi-VN", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -98,11 +113,11 @@ export default function WatchmanEmergencyPage() {
     const start = new Date(dateString).getTime();
     const now = Date.now();
     const minutes = Math.floor((now - start) / 60000);
-    
-    if (minutes < 60) return `${minutes} min ago`;
+
+    if (minutes < 60) return `${minutes} phút trước`;
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} hours ago`;
-    return `${Math.floor(hours / 24)} days ago`;
+    if (hours < 24) return `${hours} giờ trước`;
+    return `${Math.floor(hours / 24)} ngày trước`;
   };
 
   return (
@@ -138,7 +153,7 @@ export default function WatchmanEmergencyPage() {
                     {activeEmergency.triggered_by.name}
                   </p>
                   <Badge variant="destructive" className="mt-1">
-                    Căn hộ {activeEmergency.flat_no}
+                    Phòng {activeEmergency.flat_no}
                   </Badge>
                 </div>
                 <div className="text-right text-sm text-gray-600">
@@ -177,7 +192,7 @@ export default function WatchmanEmergencyPage() {
             ) : (
               <div className="space-y-3 p-4 bg-white rounded-lg border">
                 <textarea
-                  placeholder="Resolution notes (e.g., Person safely evacuated)"
+                  placeholder="Ghi chú xử lý (ví dụ: Đã đưa người ra ngoài an toàn)"
                   value={resolveNotes}
                   onChange={(e) => setResolveNotes(e.target.value)}
                   className="w-full p-3 border rounded-lg resize-none"
@@ -196,7 +211,7 @@ export default function WatchmanEmergencyPage() {
                     onClick={handleResolve}
                     disabled={resolveLoading}
                   >
-                    {resolveLoading ? "Resolving..." : "Confirm Resolve"}
+                    {resolveLoading ? "Đang xử lý..." : "Xác nhận đã xử lý"}
                   </Button>
                 </div>
               </div>
@@ -263,7 +278,9 @@ export default function WatchmanEmergencyPage() {
                 onClick={handleTrigger}
                 disabled={triggerLoading}
               >
-                {triggerLoading ? "Triggering..." : "Confirm Trigger"}
+                {triggerLoading
+                  ? "Đang kích hoạt..."
+                  : "Xác nhận kích hoạt"}{" "}
               </Button>
             </div>
           </CardContent>
@@ -282,7 +299,7 @@ export default function WatchmanEmergencyPage() {
               Lịch sử gần đây
             </span>
             <span className="text-sm font-normal text-gray-500">
-              {showHistory ? "▲ Hide" : "▼ Show"}
+              {showHistory ? "▲ Ẩn" : "▼ Hiện"}
             </span>
           </CardTitle>
         </CardHeader>
@@ -326,11 +343,11 @@ export default function WatchmanEmergencyPage() {
                                 : "secondary"
                             }
                           >
-                            {item.status}
+                            {getEmergencyStatusLabel(item.status)}
                           </Badge>
                         </div>
                         <p className="text-xs text-gray-500">
-                          Căn hộ {item.flat_no} •{" "}
+                          Phòng {item.flat_no} •{" "}
                           {formatDateTime(item.triggered_at)}
                         </p>
                       </div>

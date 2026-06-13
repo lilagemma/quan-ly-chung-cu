@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, ClipboardList, RefreshCw, CheckCircle , Edit,
+import { Plus, ClipboardList, RefreshCw, CheckCircle , Edit,BarChart3,
   Trash2,} from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,23 +73,48 @@ export default function ComplaintsPage() {
     null,
   );
 
-
   // Fetch complaints
   useEffect(() => {
     fetchComplaints(1);
   }, [statusFilter]);
 
-  const fetchComplaints = async (page: number) => {
+  // const fetchComplaints = async (page: number) => {
+  //   setDataLoading(true);
+  //   try {
+  //     const status = statusFilter === "all" ? undefined : statusFilter;
+  //     const response = await getMyComplaints(page, 10, status);
+  //     setComplaints(response.data);
+  //     setPagination(response.pagination);
+  //   } catch (error: any) {
+  //     toast({
+  //       title: "Lỗi",
+  //       description: error.message || "Không thể tải danh sách khiếu nại",
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setDataLoading(false);
+  //   }
+  // };
+  const fetchComplaints = async (page: number, customStatus?: string) => {
     setDataLoading(true);
     try {
-      const status = statusFilter === "all" ? undefined : statusFilter;
-      const response = await getMyComplaints(page, 10, status);
+      // Xác định status cần gửi lên API
+      let statusValue: string | undefined;
+      if (customStatus !== undefined) {
+        // Nếu có customStatus (click từ card), dùng nó
+        statusValue = customStatus === "all" ? undefined : customStatus;
+      } else {
+        // Nếu không (từ dropdown hoặc useEffect), dùng statusFilter
+        statusValue = statusFilter === "all" ? undefined : statusFilter;
+      }
+
+      const response = await getMyComplaints(page, 10, statusValue);
       setComplaints(response.data);
       setPagination(response.pagination);
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to fetch complaints",
+        title: "Lỗi",
+        description: error.message || "Không thể tải danh sách khiếu nại",
         variant: "destructive",
       });
     } finally {
@@ -246,7 +271,7 @@ export default function ComplaintsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border-0 shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
@@ -292,6 +317,90 @@ export default function ComplaintsPage() {
             </div>
           </CardContent>
         </Card>
+      </div> */}
+      {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4"> */}
+
+      {/* </div> */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Tất cả */}
+        <Card
+          className="border-0 shadow-sm cursor-pointer transition-all hover:shadow-md"
+          onClick={() => fetchComplaints(1, "all")}
+        >
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                <ClipboardList className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">
+                  {stats.open + stats["in-progress"] + stats.resolved}
+                </p>
+                <p className="text-xs text-slate-500">Tổng số khiếu nại</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Đang chờ */}
+        <Card
+          className="border-0 shadow-sm cursor-pointer transition-all hover:shadow-md"
+          onClick={() => fetchComplaints(1, "open")}
+        >
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                <ClipboardList className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">
+                  {stats.open}
+                </p>
+                <p className="text-xs text-slate-500">Đang chờ</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Đang xử lý */}
+        <Card
+          className="border-0 shadow-sm cursor-pointer transition-all hover:shadow-md"
+          onClick={() => fetchComplaints(1, "in-progress")}
+        >
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                <RefreshCw className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">
+                  {stats["in-progress"]}
+                </p>
+                <p className="text-xs text-slate-500">Đang xử lý</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Đã giải quyết */}
+        <Card
+          className="border-0 shadow-sm cursor-pointer transition-all hover:shadow-md"
+          onClick={() => fetchComplaints(1, "resolved")}
+        >
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">
+                  {stats.resolved}
+                </p>
+                <p className="text-xs text-slate-500">Đã giải quyết</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filter and Table */}
@@ -300,7 +409,7 @@ export default function ComplaintsPage() {
           <CardTitle>Lịch sử khiếu nại</CardTitle>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="Lọc theo trạng thái" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả trạng thái</SelectItem>
@@ -334,7 +443,7 @@ export default function ComplaintsPage() {
               </h3>
               <p className="text-gray-500 mt-1">
                 {statusFilter !== "all"
-                  ? "Tôi không có gì phàn nàn về tình trạng này."
+                  ? "Bạn không có khiếu nại nào với trạng thái này."
                   : "Bạn chưa gửi bất kỳ khiếu nại nào."}
               </p>
               <Link href="/complaints/new">
@@ -343,74 +452,29 @@ export default function ComplaintsPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Desktop: bảng */}
+              <div className="hidden sm:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead> Mô tả</TableHead>
+                      <TableHead>Mô tả</TableHead>
                       <TableHead>Trạng thái</TableHead>
                       <TableHead>Ngày</TableHead>
                       <TableHead>Thao tác</TableHead>
                     </TableRow>
                   </TableHeader>
-                  {/* <TableBody>
-                    {complaints.map((complaint) => (
-                      <TableRow key={complaint._id}>
-                        <TableCell className="max-w-md">
-                          <div className="flex items-center gap-3">
-                            {complaint.image_url && (
-                              <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
-                                <Image
-                                  src={complaint.image_url}
-                                  alt="Complaint"
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            )}
-                            <p className="truncate">{complaint.description}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(complaint.status)}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-500">
-                          {formatDate(complaint.created_at)}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openDetailDialog(complaint)}
-                          >
-                            Xem chi tiết
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody> */}
                   <TableBody>
                     {complaints.map((complaint) => (
                       <TableRow key={complaint._id}>
                         <TableCell className="max-w-md">
                           <div className="flex items-center gap-3">
-                            {/* {complaint.image_url && (
-                              <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
-                                <Image
-                                  src={complaint.image_url}
-                                  alt="Complaint"
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            )} */}
                             {complaint.image_url && (
                               <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
                                 <Image
                                   src={
                                     complaint.image_url.startsWith("http")
                                       ? complaint.image_url
-                                      : `http://localhost:4000/${complaint.image_url.replace(/\\/g, "/")}`
+                                      : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/${complaint.image_url.replace(/\\/g, "/")}`
                                   }
                                   alt="Complaint"
                                   fill
@@ -436,13 +500,12 @@ export default function ComplaintsPage() {
                             >
                               Xem
                             </Button>
-
                             {complaint.status === "open" && (
                               <>
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="text-blue-600 hover:text-blue-700"
+                                  className="text-blue-600"
                                   onClick={() => openEditDialog(complaint)}
                                 >
                                   <Edit className="w-4 h-4" />
@@ -450,7 +513,7 @@ export default function ComplaintsPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="text-red-600 hover:text-red-700"
+                                  className="text-red-600"
                                   onClick={() => openDeleteDialog(complaint)}
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -465,13 +528,82 @@ export default function ComplaintsPage() {
                 </Table>
               </div>
 
-              {/* Pagination */}
+              {/* Mobile: thẻ card */}
+              <div className="block sm:hidden space-y-4">
+                {complaints.map((complaint) => (
+                  <div
+                    key={complaint._id}
+                    className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-start gap-2">
+                          {complaint.image_url && (
+                            <div className="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
+                              <Image
+                                src={
+                                  complaint.image_url.startsWith("http")
+                                    ? complaint.image_url
+                                    : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/${complaint.image_url.replace(/\\/g, "/")}`
+                                }
+                                alt="Complaint"
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          )}
+                          <p className="text-gray-800 text-sm flex-1">
+                            {complaint.description}
+                          </p>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2 items-center">
+                          {getStatusBadge(complaint.status)}
+                          <span className="text-xs text-gray-400">
+                            {formatDate(complaint.created_at)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openDetailDialog(complaint)}
+                      >
+                        Xem chi tiết
+                      </Button>
+                      {complaint.status === "open" && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-blue-600"
+                            onClick={() => openEditDialog(complaint)}
+                          >
+                            <Edit className="w-4 h-4 mr-1" /> Sửa
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600"
+                            onClick={() => openDeleteDialog(complaint)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" /> Xóa
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Phân trang */}
               {pagination.pages > 1 && (
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
                   <p className="text-sm text-gray-500">
-                    Showing {(pagination.current - 1) * 10 + 1} to{" "}
-                    {Math.min(pagination.current * 10, pagination.total)} of{" "}
-                    {pagination.total}
+                    Hiển thị {(pagination.current - 1) * 10 + 1} đến{" "}
+                    {Math.min(pagination.current * 10, pagination.total)} trong
+                    tổng số {pagination.total}
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -527,12 +659,11 @@ export default function ComplaintsPage() {
               )} */}
               {selectedComplaint?.image_url && (
                 <div className="relative w-full h-64 rounded-lg overflow-hidden border">
-                
                   <Image
                     src={
                       selectedComplaint.image_url.startsWith("http")
                         ? selectedComplaint.image_url
-                        : `http://localhost:4000/${selectedComplaint.image_url.replace(/\\/g, "/")}`
+                        : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/${selectedComplaint.image_url.replace(/\\/g, "/")}`
                     }
                     alt="Complaint"
                     fill
@@ -658,6 +789,50 @@ export default function ComplaintsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* --- CSS RESPONSIVE CHO MOBILE --- */}
+      <style jsx>{`
+        @media (max-width: 640px) {
+          /* Bảng: cho phép cuộn ngang + giảm padding */
+          .overflow-x-auto {
+            -webkit-overflow-scrolling: touch;
+          }
+          /* Ghi đè padding của shadcn table */
+          .overflow-x-auto table td,
+          .overflow-x-auto table th {
+            padding: 0.5rem 0.25rem !important;
+            font-size: 0.75rem !important;
+          }
+          /* Cột mô tả: cho phép xuống dòng */
+          .overflow-x-auto table td:first-child {
+            max-width: 180px !important;
+            white-space: normal !important;
+            word-break: break-word !important;
+          }
+          /* Cột ngày tháng: chữ nhỏ hơn */
+          .overflow-x-auto table td:nth-child(3),
+          .overflow-x-auto table th:nth-child(3) {
+            font-size: 0.7rem !important;
+            white-space: normal !important;
+          }
+          /* Nút hành động: xếp dọc, full width */
+          .action-buttons {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+          }
+          .action-buttons button {
+            width: 100% !important;
+            font-size: 0.75rem !important;
+            padding: 0.375rem 0.5rem !important;
+            height: auto !important;
+          }
+          /* Header của bảng: thu nhỏ font */
+          .overflow-x-auto table th {
+            font-size: 0.7rem !important;
+            white-space: nowrap;
+          }
+        }
+      `}</style>
     </div>
   );
 }

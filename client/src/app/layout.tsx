@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Rajarshi Darshan - Society Management",
-  description: "Society Management System for Rajarshi Darshan Housing Society",
+  title: "MyCT2 - Quản lý chung cư",
+  description: "Hệ thống quản lý chung cư MyCT2",
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="vi">
       <body className={`${inter.variable} font-sans antialiased`}>
         <Script
           src="https://www.paypal.com/sdk/js?client-id=AUbQSUHLDdJ2VGQ7YHLfAiqnoRShI3rgQZ9OtUmRy3jHjTaeiWiudC9ePTelDI23zmD2UUVbmJP7fpuf&currency=USD"

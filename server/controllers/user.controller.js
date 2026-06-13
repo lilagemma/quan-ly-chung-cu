@@ -88,7 +88,7 @@ exports.getUserById = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "Không tìm thấy người dùng",
       });
     }
 
@@ -116,7 +116,7 @@ exports.updateUserRole = async (req, res, next) => {
     if (!role || !validRoles.includes(role)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid role. Must be admin or resident'
+        message: "Vai trò không hợp lệ. Phải là quản trị viên hoặc cư dân",
       });
     }
 
@@ -124,7 +124,7 @@ exports.updateUserRole = async (req, res, next) => {
     if (userId === req.user._id.toString()) {
       return res.status(400).json({
         success: false,
-        message: 'Cannot change your own role'
+        message: "Không thể thay đổi vai trò của chính bạn",
       });
     }
 
@@ -141,7 +141,7 @@ exports.updateUserRole = async (req, res, next) => {
     if (user.role === 'manager') {
       return res.status(400).json({
         success: false,
-        message: 'Cannot change manager role'
+        message: "Không thể thay đổi vai trò quản lý",
       });
     }
 
@@ -150,8 +150,8 @@ exports.updateUserRole = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: `User role updated to ${role}`,
-      data: user.toJSON()
+      message: `Vai trò người dùng đã được cập nhật thành ${role}`,
+      data: user.toJSON(),
     });
   } catch (error) {
     next(error);
@@ -171,7 +171,7 @@ exports.createWatchman = async (req, res, next) => {
     if (!name || !email || !phone) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide name, email and phone'
+        message: 'Vui lòng cung cấp họ tên, email và số điện thoại'
       });
     }
 
@@ -180,7 +180,7 @@ exports.createWatchman = async (req, res, next) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'Email already registered'
+        message: "Email đã được đăng ký",
       });
     }
 
@@ -199,11 +199,11 @@ exports.createWatchman = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Watchman account created successfully',
+      message: "Tạo tài khoản bảo vệ thành công",
       data: {
         user: watchman.toJSON(),
-        tempPassword // Return the unhashed password for manager to share
-      }
+        tempPassword, // Return the unhashed password for manager to share
+      },
     });
   } catch (error) {
     next(error);
@@ -223,7 +223,7 @@ exports.deleteUser = async (req, res, next) => {
     if (userId === req.user._id.toString()) {
       return res.status(400).json({
         success: false,
-        message: 'Cannot deactivate your own account'
+        message: "Không thể vô hiệu hóa tài khoản của chính bạn",
       });
     }
 
@@ -240,7 +240,7 @@ exports.deleteUser = async (req, res, next) => {
     if (user.role === 'manager') {
       return res.status(400).json({
         success: false,
-        message: 'Cannot deactivate manager account'
+        message: "Không thể vô hiệu hóa tài khoản quản lý",
       });
     }
 
@@ -250,10 +250,91 @@ exports.deleteUser = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'User account deactivated',
-      data: user.toJSON()
+      message: "Tài khoản người dùng đã bị vô hiệu hóa",
+      data: user.toJSON(),
     });
   } catch (error) {
     next(error);
+  }
+};
+
+exports.updateFcmToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+
+      {
+        fcmToken: token,
+      },
+
+      {
+        new: true,
+      },
+    );
+
+    res.json({
+      success: true,
+
+      message: "FCM token saved",
+
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+
+      message: error.message,
+    });
+  }
+};
+
+// exports.saveFcmToken = async (req, res) => {
+
+//   try {
+//     const { token } = req.body;
+
+//     await User.findByIdAndUpdate(req.user._id, {
+//       fcmToken: token,
+//     });
+
+//     res.json({
+//       success: true,
+//       message: "Lưu FCM token thành công",
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+exports.saveFcmToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        fcmToken: token,
+      },
+      {
+        new: true,
+      },
+    );
+
+    console.log("SAVE FCM TOKEN:", user.email, user.fcmToken);
+
+    res.json({
+      success: true,
+      message: "Lưu FCM token thành công",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

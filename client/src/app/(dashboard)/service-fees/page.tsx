@@ -204,7 +204,7 @@ function BillModal({
     initial?.items ?? [
       {
         type: "dien",
-        description: "Tien dien",
+        description: "Tiền điện",
         quantity: 100,
         unit_price: 3500,
         amount: 350000,
@@ -305,7 +305,7 @@ function BillModal({
     const e: Record<string, string> = {};
     if (!flat_no) e.flat_no = "Chọn căn hộ";
     if (isAdmin && mode === "create" && selectableFlatNos.length === 0) {
-      e.flat_no = "Tat ca can ho da co hoa don cho ky nay";
+      e.flat_no = "Tất cả căn hộ đã có hóa đơn cho kỳ này";
     }
     if (!month || month < 1 || month > 12) e.month = "Tháng không hợp lệ";
     if (!year || year < 2020) e.year = "Năm không hợp lệ";
@@ -627,7 +627,7 @@ function MarkPaidModal({
 
   const handlePaypalPayment = async () => {
     if (!window.paypal) {
-      alert("PayPal SDK chua san sang. Vui long tai lai trang.");
+      alert("PayPal SDK chưa sẵn sàng. Vui lòng tải lại trang.");
       return;
     }
 
@@ -651,7 +651,7 @@ function MarkPaidModal({
             onSuccess(res.data.data);
             onClose();
           } catch (err: unknown) {
-            alert(`❌ ${getErrorMessage(err) ?? "Khong the xac nhan PayPal"}`);
+            alert(`❌ ${getErrorMessage(err) ?? "Không thể xác nhận PayPal"}`);
           } finally {
             setSubmitting(false);
           }
@@ -659,7 +659,7 @@ function MarkPaidModal({
         onCancel: () => setSubmitting(false),
         onError: (err: unknown) => {
           console.error("PayPal service fee error:", err);
-          alert("Thanh toan PayPal that bai.");
+          alert("Thanh toán PayPal thất bại.");
           setSubmitting(false);
         },
       })
@@ -889,7 +889,7 @@ function DetailModal({
                 onClick={onMarkPaid}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
-                ✅ Xác nhận đã TT
+                ✅ Xác nhận đã thanh toán
               </Button>
             )}
             {canPay && fee.status !== "paid" && (
@@ -1193,7 +1193,7 @@ export default function ServiceFeesPage() {
         </div>
 
         {/* ── Table ── */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="desktop-table bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           {loading ? (
             <div className="py-20 text-center text-gray-400">
               <div className="text-3xl mb-3">⏳</div>
@@ -1278,8 +1278,31 @@ export default function ServiceFeesPage() {
                     <TableCell className="text-right font-bold text-gray-800">
                       {fmt(fee.total_amount)}
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <StatusBadge status={fee.status} />
+                    </TableCell> */}
+                    <TableCell>
+                      {(() => {
+                        if (fee.status === "paid") {
+                          return (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-emerald-50 border-emerald-200 text-emerald-700">
+                              Đã thanh toán
+                            </span>
+                          );
+                        }
+                        if (isOverdue(fee)) {
+                          return (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-50 border-red-200 text-red-700 animate-pulse">
+                              Quá hạn
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-amber-50 border-amber-200 text-amber-700">
+                            Chưa thanh toán
+                          </span>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="text-sm text-gray-500">
                       {fmtDate(fee.due_date)}
@@ -1294,7 +1317,7 @@ export default function ServiceFeesPage() {
                         >
                           Xem
                         </Button>
-                        {isAdmin && (
+                        {isAdmin && fee.status !== "paid" && (
                           <>
                             <Button
                               variant="outline"
@@ -1304,15 +1327,13 @@ export default function ServiceFeesPage() {
                             >
                               Sửa
                             </Button>
-                            {fee.status !== "paid" && (
-                              <Button
-                                size="sm"
-                                onClick={() => openMarkPaid(fee)}
-                                className="h-7 text-xs px-2 bg-emerald-600 hover:bg-emerald-700"
-                              >
-                                ✅ TT
-                              </Button>
-                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => openMarkPaid(fee)}
+                              className="h-7 text-xs px-2 bg-emerald-600 hover:bg-emerald-700"
+                            >
+                              ✅ TT
+                            </Button>
                           </>
                         )}
                         {canResidentPay && fee.status !== "paid" && (
@@ -1339,6 +1360,118 @@ export default function ServiceFeesPage() {
             Hiển thị {filtered.length} / {fees.length} hóa đơn
           </p>
         )}
+      </div>
+
+      {/* Mobile card view - chỉ hiển thị trên màn hình dưới 640px */}
+      <div className="mobile-cards space-y-3 mt-4">
+        {!loading && filtered.length > 0 ? (
+          filtered.map((fee) => (
+            <div
+              key={fee._id}
+              className={`bg-white rounded-xl border p-4 shadow-sm ${
+                isOverdue(fee)
+                  ? "border-red-200 bg-red-50/30"
+                  : "border-gray-100"
+              }`}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  {isAdmin && (
+                    <p className="font-mono font-bold text-blue-700 text-base">
+                      {fee.flat_no}
+                    </p>
+                  )}
+                  <p className="text-sm font-semibold text-gray-800">
+                    Tháng {fee.month}/{fee.year}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-gray-900">
+                    {fmt(fee.total_amount)}
+                  </p>
+                  {fee.status === "paid" && (
+                    <span className="text-emerald-600 text-xs">
+                      ✅ Đã thanh toán
+                    </span>
+                  )}
+                  {fee.status !== "paid" && isOverdue(fee) && (
+                    <span className="text-red-600 text-xs">⚠️ Quá hạn</span>
+                  )}
+                  {fee.status !== "paid" && !isOverdue(fee) && (
+                    <span className="text-amber-600 text-xs">
+                      ⏳ Chưa thanh toán
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-1 my-2">
+                {fee.items.slice(0, 3).map((item, i) => (
+                  <span
+                    key={i}
+                    className="inline-block text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5"
+                  >
+                    {item.description || item.type}
+                  </span>
+                ))}
+                {fee.items.length > 3 && (
+                  <span className="text-xs text-gray-400">
+                    +{fee.items.length - 3}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-100">
+                <span className="text-xs text-gray-500">
+                  Hạn: {fmtDate(fee.due_date)}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openDetail(fee)}
+                    className="h-8 text-xs px-3"
+                  >
+                    Xem
+                  </Button>
+                  {isAdmin && fee.status !== "paid" && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEdit(fee)}
+                        className="h-8 text-xs px-3"
+                      >
+                        Sửa
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => openMarkPaid(fee)}
+                        className="h-8 text-xs px-3 bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        TT
+                      </Button>
+                    </>
+                  )}
+                  {canResidentPay && fee.status !== "paid" && (
+                    <Button
+                      size="sm"
+                      onClick={() => openMarkPaid(fee)}
+                      className="h-8 text-xs px-3 bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      Thanh toán
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        ) : !loading && filtered.length === 0 ? (
+          <div className="py-10 text-center text-gray-400">
+            <div className="text-4xl mb-3">📭</div>
+            <p className="text-sm font-medium">Không có hóa đơn nào</p>
+          </div>
+        ) : null}
       </div>
 
       {/* ── Modals ── */}
@@ -1383,6 +1516,25 @@ export default function ServiceFeesPage() {
           onSuccess={onSuccess}
         />
       )}
+  <style jsx>{`
+    @media (max-width: 640px) {
+      .desktop-table {
+        display: none !important;
+      }
+      .mobile-cards {
+        display: block !important;
+      }
+    }
+    @media (min-width: 641px) {
+      .mobile-cards {
+        display: none !important;
+      }
+      .desktop-table {
+        display: block !important;
+      }
+    }
+  `}</style>;
     </div>
   );
+
 }

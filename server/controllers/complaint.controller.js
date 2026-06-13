@@ -17,14 +17,14 @@ exports.createComplaint = async (req, res, next) => {
     if (!description || description.trim().length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Complaint description is required'
+        message: "Mô tả khiếu nại là bắt buộc",
       });
     }
 
     if (description.length > 1000) {
       return res.status(400).json({
         success: false,
-        message: 'Description cannot exceed 1000 characters'
+        message: "Mô tả không được vượt quá 1000 ký tự",
       });
     }
 
@@ -42,8 +42,8 @@ exports.createComplaint = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Complaint submitted successfully',
-      data: complaint
+      message: "Gửi khiếu nại thành công",
+      data: complaint,
     });
   } catch (error) {
     console.error('Error creating complaint:', error);
@@ -180,7 +180,7 @@ exports.getComplaintById = async (req, res, next) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Không tìm thấy khiếu nại",
       });
     }
 
@@ -191,7 +191,7 @@ exports.getComplaintById = async (req, res, next) => {
     if (!isOwner && !isAdmin) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to view this complaint'
+        message: "Không có quyền xem khiếu nại này",
       });
     }
 
@@ -221,7 +221,8 @@ exports.updateComplaintStatus = async (req, res, next) => {
     if (!status || !validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid status. Must be: open, in-progress, or resolved'
+        message:
+          "Trạng thái không hợp lệ. Phải là: open, in-progress hoặc resolved",
       });
     }
 
@@ -231,7 +232,7 @@ exports.updateComplaintStatus = async (req, res, next) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Không tìm thấy khiếu nại",
       });
     }
 
@@ -267,15 +268,18 @@ exports.updateComplaintStatus = async (req, res, next) => {
           updated_at: new Date()
         });
       } catch (emailError) {
-        console.error('Failed to send status update email:', emailError.message);
+        console.error(
+          "Trạng thái khiếu nại đã được cập nhật thành:",
+          emailError.message,
+        );
         // Don't fail the request if email fails
       }
     }
 
     res.status(200).json({
       success: true,
-      message: `Complaint status updated to ${status}`,
-      data: complaint
+      message: `Trạng thái khiếu nại đã được cập nhật thành ${status}`,
+      data: complaint,
     });
   } catch (error) {
     console.error('Error updating complaint status:', error);
@@ -295,7 +299,7 @@ exports.getUploadUrl = async (req, res, next) => {
     if (!result.success) {
       return res.status(500).json({
         success: false,
-        message: 'Failed to generate upload credentials'
+        message: "Không thể tạo thông tin xác thực tải ảnh",
       });
     }
 

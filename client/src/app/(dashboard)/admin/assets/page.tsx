@@ -437,8 +437,8 @@ export default function AdminAssetsPage() {
             </h3>
             <p className="text-gray-600 mt-1">
               {isManager
-                ? "Add your first asset to get started."
-                : "No assets have been registered yet."}
+                ? "Hãy thêm tài sản đầu tiên để bắt đầu."
+                : "Chưa có tài sản nào được đăng ký."}
             </p>
             {isManager && (
               <Button

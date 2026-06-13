@@ -84,9 +84,9 @@ export default function EmergencyPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Please try again';
       toast({
-        title: 'Failed to send alert',
+        title: "Gửi cảnh báo thất bại",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
       setTriggerLoading(false);
@@ -113,7 +113,8 @@ export default function EmergencyPage() {
       setResolveDialogOpen(false);
       fetchHistory(1); // Refresh history
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Please try again';
+      const errorMessage =
+        error instanceof Error ? error.message : "Vui lòng thử lại";
       toast({
         title: "Không giải quyết được tình huống khẩn cấp",
         description: errorMessage,
@@ -189,7 +190,7 @@ const formatDate = (dateString: string) => {
               <EmergencyButton
                 onTrigger={handleTrigger}
                 hasActiveEmergency={hasActiveEmergency}
-                userFlat={user?.flat_no || "Unknown"}
+                userFlat={user?.flat_no || "Không rõ"}
                 triggerLoading={triggerLoading}
               />
             </CardContent>
@@ -373,7 +374,8 @@ const formatDate = (dateString: string) => {
             </div>
           ) : history && history.data.length > 0 ? (
             <>
-              <div className="overflow-x-auto">
+              {/* Desktop: bảng */}
+              <div className="hidden sm:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -396,9 +398,13 @@ const formatDate = (dateString: string) => {
                             <p className="font-medium">
                               {emergency.triggered_by.name}
                             </p>
-                            <p className="text-xs text-gray-500">
-                              Căn hộ {emergency.triggered_by.flat_no}
-                            </p>
+                            {emergency.triggered_by.flat_no &&
+                              emergency.triggered_by.flat_no !==
+                                "Security/Watchman" && (
+                                <p className="text-xs text-gray-500">
+                                  Căn hộ {emergency.triggered_by.flat_no}
+                                </p>
+                              )}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -414,7 +420,6 @@ const formatDate = (dateString: string) => {
                                 : ""
                             }
                           >
-                            {/* {emergency.status.toUpperCase()} */}
                             {emergency.status === "active"
                               ? "ĐANG HOẠT ĐỘNG"
                               : "ĐÃ XỬ LÝ"}
@@ -445,6 +450,67 @@ const formatDate = (dateString: string) => {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+
+              {/* Mobile: danh sách thẻ */}
+              <div className="block sm:hidden space-y-4">
+                {history.data.map((emergency: Emergency) => (
+                  <div
+                    key={emergency._id}
+                    className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {formatDate(emergency.triggered_at)}
+                        </p>
+                        <p className="font-semibold mt-1">
+                          {emergency.triggered_by.name}
+                          {emergency.triggered_by.flat_no &&
+                            emergency.triggered_by.flat_no !==
+                              "Security/Watchman" &&
+                            ` (Căn hộ ${emergency.triggered_by.flat_no})`}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          emergency.status === "active"
+                            ? "destructive"
+                            : "default"
+                        }
+                        className={
+                          emergency.status === "resolved"
+                            ? "bg-green-100 text-green-800"
+                            : ""
+                        }
+                      >
+                        {emergency.status === "active"
+                          ? "ĐANG HOẠT ĐỘNG"
+                          : "ĐÃ XỬ LÝ"}
+                      </Badge>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="text-gray-500">Xử lý bởi:</span>
+                        <p>{emergency.resolved_by?.name || "—"}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">
+                          Thời gian phản hồi:
+                        </span>
+                        <p>{getResponseTime(emergency) || "—"}</p>
+                      </div>
+                    </div>
+
+                    {emergency.notes && (
+                      <div className="mt-2 text-sm bg-gray-50 p-2 rounded">
+                        <span className="text-gray-500">Ghi chú:</span>
+                        <p className="text-gray-700">{emergency.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
 
               {/* Pagination */}
@@ -529,7 +595,7 @@ const formatDate = (dateString: string) => {
                 </Label>
                 <Textarea
                   id="resolveNotes"
-                  placeholder="e.g., Technician fixed the issue, power restored..."
+                  placeholder="Ví dụ: Kỹ thuật viên đã sửa xong, điện được khôi phục..."
                   value={resolveNotes}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                     setResolveNotes(e.target.value)

@@ -98,7 +98,7 @@ export default function NewComplaintPage() {
             title: "Tải ảnh lên không thành công",
             description:
               uploadError.message ||
-              "Tải ảnh lên không thành công. Gửi bài mà không có ảnh.",
+              "Tải ảnh lên không thành công. Gửi đơn mà không có ảnh.",
             variant: "destructive",
           });
           // Continue without image

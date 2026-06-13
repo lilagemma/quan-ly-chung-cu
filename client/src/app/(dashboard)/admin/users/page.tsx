@@ -54,6 +54,8 @@ import {
   Copy,
   Key,
 } from 'lucide-react';
+import Link from "next/link";
+
 
 interface UserData {
   _id: string;
@@ -119,9 +121,9 @@ export default function AdminUsersPage() {
       setPagination(response.data.pagination);
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to fetch users',
-        variant: 'destructive',
+        title: "Lỗi",
+        description: "Không thể tải danh sách người dùng",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -277,6 +279,12 @@ export default function AdminUsersPage() {
               Thêm bảo vệ
             </Button>
           )}
+          <Link href="/admin/statistics">
+            <Button variant="outline" size="sm">
+              <Users className="w-4 h-4 mr-1" />
+              Thống kê cư dân
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -361,7 +369,7 @@ export default function AdminUsersPage() {
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="w-[160px]">
                   <Filter className="w-4 h-4 mr-1" />
-                  <SelectValue placeholder="Role" />
+                  <SelectValue placeholder="Vai trò" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả vai trò</SelectItem>
@@ -373,7 +381,7 @@ export default function AdminUsersPage() {
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[155px]">
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder="Trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả trạng thái</SelectItem>
@@ -494,17 +502,20 @@ export default function AdminUsersPage() {
                             </Button>
                             {isManager && u.role !== "manager" && (
                               <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setSelectedUser(u);
-                                    setNewRole(u.role);
-                                    setRoleDialogOpen(true);
-                                  }}
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
+                                {/* Ẩn nút cập nhật vai trò nếu user là bảo vệ */}
+                                {u.role !== "watchman" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      setSelectedUser(u);
+                                      setNewRole(u.role);
+                                      setRoleDialogOpen(true);
+                                    }}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                )}
                                 {u.is_active && (
                                   <Button
                                     variant="ghost"
@@ -635,7 +646,7 @@ export default function AdminUsersPage() {
             <Label>Chọn vai trò</Label>
             <Select value={newRole} onValueChange={setNewRole}>
               <SelectTrigger className="mt-2">
-                <SelectValue placeholder="Select role" />
+                <SelectValue placeholder="Chọn vai trò" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="admin">Quản trị viên</SelectItem>
@@ -696,17 +707,16 @@ export default function AdminUsersPage() {
       <Dialog open={watchmanDialogOpen} onOpenChange={setWatchmanDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Watchman Account</DialogTitle>
+            <DialogTitle>Tạo tài khoản bảo vệ</DialogTitle>
             <DialogDescription>
-              Add a new watchman to the society. A temporary password will be
-              generated.
+              Thêm bảo vệ mới cho chung cư. Mật khẩu tạm thời sẽ được tạo.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label>Name</Label>
+              <Label>Họ tên</Label>
               <Input
-                placeholder="Enter watchman name"
+                placeholder="Nhập tên bảo vệ"
                 value={watchmanForm.name}
                 onChange={(e) =>
                   setWatchmanForm({ ...watchmanForm, name: e.target.value })
@@ -718,7 +728,7 @@ export default function AdminUsersPage() {
               <Label>Email</Label>
               <Input
                 type="email"
-                placeholder="Enter email address"
+                placeholder="Nhập địa chỉ email"
                 value={watchmanForm.email}
                 onChange={(e) =>
                   setWatchmanForm({ ...watchmanForm, email: e.target.value })
@@ -727,9 +737,9 @@ export default function AdminUsersPage() {
               />
             </div>
             <div>
-              <Label>Phone</Label>
+              <Label>Số điện thoại</Label>
               <Input
-                placeholder="Enter phone number"
+                placeholder="Nhập số điện thoại"
                 value={watchmanForm.phone}
                 onChange={(e) =>
                   setWatchmanForm({ ...watchmanForm, phone: e.target.value })
@@ -743,10 +753,10 @@ export default function AdminUsersPage() {
               variant="outline"
               onClick={() => setWatchmanDialogOpen(false)}
             >
-              Cancel
+              Hủy
             </Button>
             <Button onClick={handleCreateWatchman} disabled={actionLoading}>
-              {actionLoading ? "Creating..." : "Create Watchman"}
+              {actionLoading ? "Đang tạo..." : " Tạo bảo vệ"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -761,21 +771,21 @@ export default function AdminUsersPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-green-600">
               <CheckCircle className="w-5 h-5" />
-              Watchman Account Created
+              Đã tạo tài khoản bảo vệ
             </DialogTitle>
             <DialogDescription>
-              Please save these credentials. The password cannot be retrieved
-              later.
+              Vui lòng lưu lại thông tin đăng nhập. Mật khẩu không thể lấy lại
+              sau này.
             </DialogDescription>
           </DialogHeader>
           {createdWatchman && (
             <div className="space-y-4 py-4">
               <Alert className="bg-amber-50 border-amber-200">
                 <Key className="h-4 w-4 text-amber-600" />
-                <AlertTitle className="text-amber-800">Important</AlertTitle>
+                <AlertTitle className="text-amber-800">Quan trọng</AlertTitle>
                 <AlertDescription className="text-amber-700">
-                  Share these credentials with the watchman. They should change
-                  the password after first login.
+                  Chia sẻ thông tin này với bảo vệ. Họ nên đổi mật khẩu sau lần
+                  đăng nhập đầu tiên.
                 </AlertDescription>
               </Alert>
 
@@ -799,8 +809,8 @@ export default function AdminUsersPage() {
                       onClick={() => {
                         navigator.clipboard.writeText(createdWatchman.email);
                         toast({
-                          title: "Copied!",
-                          description: "Email copied to clipboard",
+                          title: "Đã sao chép!",
+                          description: "Email đã được sao chép",
                         });
                       }}
                     >
@@ -810,7 +820,7 @@ export default function AdminUsersPage() {
                 </div>
                 <div>
                   <Label className="text-xs text-slate-500">
-                    Temporary Password
+                    Mật khẩu tạm thời
                   </Label>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 px-3 py-2 bg-white border rounded font-mono text-lg font-bold text-blue-600">
@@ -823,8 +833,8 @@ export default function AdminUsersPage() {
                       onClick={() => {
                         navigator.clipboard.writeText(createdWatchman.password);
                         toast({
-                          title: "Copied!",
-                          description: "Password copied to clipboard",
+                          title: "Đã sao chép!",
+                          description: "Mật khẩu đã được sao chép",
                         });
                       }}
                     >
@@ -843,7 +853,7 @@ export default function AdminUsersPage() {
               }}
               className="w-full"
             >
-              I&apos;ve Saved the Credentials
+              Tôi đã lưu thông tin
             </Button>
           </DialogFooter>
         </DialogContent>

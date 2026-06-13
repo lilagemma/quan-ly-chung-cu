@@ -71,7 +71,7 @@ export function useGateLog() {
       const response = await api.post('/gatelog', payload);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to create entry';
+      const message = err.response?.data?.message || "Không thể tạo bản ghi";
       setError(message);
       throw new Error(message);
     } finally {
@@ -87,7 +87,7 @@ export function useGateLog() {
       const response = await api.get('/gatelog/today');
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to fetch entries';
+      const message = err.response?.data?.message || "Không thể tải danh sách";
       setError(message);
       throw new Error(message);
     } finally {
@@ -105,7 +105,8 @@ export function useGateLog() {
       const response = await api.put(`/gatelog/${entryId}/out`);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to mark out time';
+      const message =
+        err.response?.data?.message || "Không thể đánh dấu ra cổng";
       setError(message);
       throw new Error(message);
     } finally {
@@ -133,7 +134,7 @@ export function useGateLog() {
       const response = await api.get(`/gatelog/history?${params}`);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to fetch history';
+      const message = err.response?.data?.message || "Không thể tải lịch sử";
       setError(message);
       throw new Error(message);
     } finally {

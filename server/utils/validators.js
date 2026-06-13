@@ -39,9 +39,9 @@ const isValidFlatNo = (flatNo) => {
  */
 const validatePassword = (password) => {
   if (!password || password.length < 6) {
-    return { 
-      isValid: false, 
-      message: 'Password must be at least 6 characters long' 
+    return {
+      isValid: false,
+      message: "Mật khẩu phải có ít nhất 6 ký tự",
     };
   }
   return { isValid: true, message: '' };

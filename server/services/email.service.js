@@ -1,109 +1,119 @@
-const brevoClient = require('../config/brevo');
+const brevoClient = require("../config/brevo");
 const transporter = require("../config/mail");
 
 /**
- * Format month number to month name
+ * Format month number to month name (Vietnamese)
  */
 const getMonthName = (month) => {
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    "Tháng 1",
+    "Tháng 2",
+    "Tháng 3",
+    "Tháng 4",
+    "Tháng 5",
+    "Tháng 6",
+    "Tháng 7",
+    "Tháng 8",
+    "Tháng 9",
+    "Tháng 10",
+    "Tháng 11",
+    "Tháng 12",
   ];
-  return months[month - 1] || 'Unknown';
+  return months[month - 1] || "Không rõ";
 };
 
 /**
- * Format date to readable string
+ * Format date to readable string (Vietnamese locale)
  */
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
+  return new Date(date).toLocaleDateString("vi-VN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 };
 
 /**
- * Format amount to Indian Rupees
+ * Format amount to Vietnamese Dong
  */
 const formatAmount = (amount) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 0
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    minimumFractionDigits: 0,
   }).format(amount);
 };
 
 /**
  * Send payment confirmation email
- * @param {Object} data - Payment data
- * @param {string} data.email - Recipient email
- * @param {string} data.name - Recipient name
- * @param {string} data.flat_no - Flat number
- * @param {number} data.amount - Payment amount
- * @param {number} data.month - Month (1-12)
- * @param {number} data.year - Year
- * @param {string} data.transaction_id - payment transaction ID
- * @param {Date} data.payment_date - Payment date
  */
 exports.sendPaymentConfirmation = async (data) => {
   try {
-    const { email, name, flat_no, amount, month, year, transaction_id, payment_date } = data;
+    const {
+      email,
+      name,
+      flat_no,
+      amount,
+      month,
+      year,
+      transaction_id,
+      payment_date,
+    } = data;
 
     const monthName = getMonthName(month);
     const formattedAmount = formatAmount(amount);
-    const formattedDate = new Date(payment_date).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    const formattedDate = new Date(payment_date).toLocaleString("vi-VN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: `Payment Confirmation - Service Fee for ${monthName} ${year}`,
+      subject: `Xác nhận thanh toán - Phí dịch vụ tháng ${monthName} ${year}`,
       htmlContent: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Payment Confirmation</title>
+          <title>Xác nhận thanh toán</title>
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; text-align: center;">MyCT2</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Payment Confirmation</p>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Xác nhận thanh toán</p>
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="margin-bottom: 20px;">Dear <strong>${name}</strong>,</p>
+            <p style="margin-bottom: 20px;">Kính gửi <strong>${name}</strong>,</p>
             
-            <p>Thank you for your payment! Your service fee payment has been successfully received.</p>
+            <p>Cảm ơn bạn đã thanh toán! Khoản phí dịch vụ của bạn đã được nhận thành công.</p>
             
             <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Payment Details</h3>
+              <h3 style="margin-top: 0; color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Chi tiết thanh toán</h3>
               
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Flat No:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Căn hộ:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-weight: bold; text-align: right;">${flat_no}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Month:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Tháng:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-weight: bold; text-align: right;">${monthName} ${year}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Amount Paid:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Số tiền đã thanh toán:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-weight: bold; text-align: right; color: #22c55e; font-size: 18px;">${formattedAmount}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Transaction ID:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Mã giao dịch:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-weight: bold; text-align: right; font-family: monospace; font-size: 12px;">${transaction_id}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Payment Date:</td>
+                  <td style="padding: 10px 0; color: #666;">Ngày thanh toán:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right;">${formattedDate}</td>
                 </tr>
               </table>
@@ -111,77 +121,85 @@ exports.sendPaymentConfirmation = async (data) => {
             
             <div style="background: #ecfdf5; border: 1px solid #22c55e; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center;">
               <span style="color: #22c55e; font-size: 24px;">✓</span>
-              <p style="margin: 5px 0 0 0; color: #166534; font-weight: bold;">Payment Successful</p>
+              <p style="margin: 5px 0 0 0; color: #166534; font-weight: bold;">Thanh toán thành công</p>
             </div>
             
             <p style="color: #666; font-size: 14px;">
-              Please save this email for your records. If you have any questions regarding this payment, 
-              please contact the society office.
+              Vui lòng lưu email này để đối chiếu. Nếu bạn có bất kỳ câu hỏi nào liên quan đến thanh toán này, vui lòng liên hệ văn phòng chung cư.
             </p>
             
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center; margin-bottom: 0;">
-              This is an automated email from MyCT2 Management System.<br>
-              Please do not reply to this email.
+              Đây là email tự động từ Hệ thống quản lý MyCT2.<br>
+              Vui lòng không phản hồi email này.
             </p>
           </div>
         </body>
         </html>
       `,
       textContent: `
-        Payment Confirmation - MyCT2
+        Xác nhận thanh toán - MyCT2
         
-        Dear ${name},
+        Kính gửi ${name},
         
-        Thank you for your payment! Your service fee payment has been successfully received.
+        Cảm ơn bạn đã thanh toán! Khoản phí dịch vụ của bạn đã được nhận thành công.
         
-        Payment Details:
-        - Flat No: ${flat_no}
-        - Month: ${monthName} ${year}
-        - Amount Paid: ${formattedAmount}
-        - Transaction ID: ${transaction_id}
-        - Payment Date: ${formattedDate}
+        Chi tiết thanh toán:
+        - Căn hộ: ${flat_no}
+        - Tháng: ${monthName} ${year}
+        - Số tiền đã thanh toán: ${formattedAmount}
+        - Mã giao dịch: ${transaction_id}
+        - Ngày thanh toán: ${formattedDate}
         
-        Please save this email for your records.
+        Vui lòng lưu email này để đối chiếu.
         
-        Thank you,
+        Cảm ơn bạn,
         MyCT2
       `,
-      sender: brevoClient.defaultSender
+      sender: brevoClient.defaultSender,
     };
 
-    const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Payment confirmation email sent:', email);
+    const response =
+      await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("Đã gửi email xác nhận thanh toán:", email);
     return response;
   } catch (error) {
-    console.error('Error sending payment confirmation email:', error);
+    console.error("Lỗi khi gửi email xác nhận thanh toán:", error);
     throw error;
   }
 };
 
 /**
  * Send service fee reminder email
- * @param {Object} data - Reminder data
  */
 exports.sendServiceFeeReminder = async (data) => {
   try {
-    const { email, name, flat_no, amount, month, year, due_date, is_overdue = false } = data;
+    const {
+      email,
+      name,
+      flat_no,
+      amount,
+      month,
+      year,
+      due_date,
+      is_overdue = false,
+    } = data;
 
     const monthName = getMonthName(month);
     const formattedAmount = formatAmount(amount);
-    const formattedDueDate = new Date(due_date).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+    const formattedDueDate = new Date(due_date).toLocaleDateString("vi-VN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
 
-    const subject = is_overdue 
-      ? `Overdue: Service Fee Payment for ${monthName} ${year}`
-      : `Reminder: Service Fee Payment Due for ${monthName} ${year}`;
+    const subject = is_overdue
+      ? `[QUÁ HẠN] Thanh toán phí dịch vụ tháng ${monthName} ${year}`
+      : `Nhắc nhở: Thanh toán phí dịch vụ tháng ${monthName} ${year}`;
 
-    const urgencyColor = is_overdue ? '#ef4444' : '#f59e0b';
-    const urgencyText = is_overdue ? 'OVERDUE' : 'REMINDER';
+    const urgencyColor = is_overdue ? "#ef4444" : "#f59e0b";
+    const urgencyText = is_overdue ? "QUÁ HẠN" : "NHẮC NHỞ";
 
     const sendSmtpEmail = {
       to: [{ email, name }],
@@ -196,77 +214,77 @@ exports.sendServiceFeeReminder = async (data) => {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: ${urgencyColor}; padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; text-align: center;">MyCT2</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">${urgencyText}: Service Fee Payment</p>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">${urgencyText}: Thanh toán phí dịch vụ</p>
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-            <p>Dear <strong>${name}</strong>,</p>
+            <p>Kính gửi <strong>${name}</strong>,</p>
             
-            <p>This is a ${is_overdue ? 'final notice' : 'friendly reminder'} that your service fee payment for <strong>${monthName} ${year}</strong> is ${is_overdue ? 'overdue' : 'pending'}.</p>
+            <p>Đây là ${is_overdue ? "thông báo cuối cùng" : "lời nhắc nhở thân thiện"} rằng khoản phí dịch vụ của bạn cho tháng <strong>${monthName} ${year}</strong> ${is_overdue ? "đã quá hạn" : "đang chờ thanh toán"}.</p>
             
             <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Flat No:</td>
+                  <td style="padding: 10px 0; color: #666;">Căn hộ:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right;">${flat_no}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Amount Due:</td>
+                  <td style="padding: 10px 0; color: #666;">Số tiền cần thanh toán:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right; color: ${urgencyColor};">${formattedAmount}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Due Date:</td>
+                  <td style="padding: 10px 0; color: #666;">Hạn thanh toán:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right;">${formattedDueDate}</td>
                 </tr>
               </table>
             </div>
             
-            ${is_overdue ? '<p style="color: #ef4444;"><strong>Note:</strong> A late fee of ₹100 has been applied to your account.</p>' : ''}
+            ${is_overdue ? '<p style="color: #ef4444;"><strong>Lưu ý:</strong> Phí phạt quá hạn 100.000 ₫ đã được áp dụng cho tài khoản của bạn.</p>' : ""}
             
-            <p>Please log in to the Society Management Portal to make your payment.</p>
+            <p>Vui lòng đăng nhập vào Cổng thông tin quản lý chung cư để thực hiện thanh toán.</p>
             
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center;">
-              MyCT2 Management System
+              Hệ thống quản lý MyCT2
             </p>
           </div>
         </body>
         </html>
       `,
       textContent: `
-        ${urgencyText}: Service Fee Payment - MyCT2
+        ${urgencyText}: Thanh toán phí dịch vụ - MyCT2
         
-        Dear ${name},
+        Kính gửi ${name},
         
-        This is a ${is_overdue ? 'final notice' : 'friendly reminder'} that your service fee payment for ${monthName} ${year} is ${is_overdue ? 'overdue' : 'pending'}.
+        Đây là ${is_overdue ? "thông báo cuối cùng" : "lời nhắc nhở"} rằng khoản phí dịch vụ của bạn cho tháng ${monthName} ${year} ${is_overdue ? "đã quá hạn" : "đang chờ thanh toán"}.
         
-        Flat No: ${flat_no}
-        Amount Due: ${formattedAmount}
-        Due Date: ${formattedDueDate}
+        Căn hộ: ${flat_no}
+        Số tiền cần thanh toán: ${formattedAmount}
+        Hạn thanh toán: ${formattedDueDate}
         
-        ${is_overdue ? 'Note: A late fee of ₹100 has been applied.' : ''}
+        ${is_overdue ? "Lưu ý: Phí phạt quá hạn 100.000 ₫ đã được áp dụng." : ""}
         
-        Please log in to make your payment.
+        Vui lòng đăng nhập để thanh toán.
         
-        Thank you,
+        Cảm ơn bạn,
         MyCT2
       `,
-      sender: brevoClient.defaultSender
+      sender: brevoClient.defaultSender,
     };
 
-    const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Service fee reminder email sent:', email);
+    const response =
+      await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("Đã gửi email nhắc nhở phí dịch vụ:", email);
     return response;
   } catch (error) {
-    console.error('Error sending service fee reminder email:', error);
+    console.error("Lỗi khi gửi email nhắc nhở phí dịch vụ:", error);
     throw error;
   }
 };
 
 /**
  * Send service fee invoice email
- * @param {Object} data - Invoice data
  */
 exports.sendServiceFeeInvoice = async (data) => {
   try {
@@ -278,7 +296,7 @@ exports.sendServiceFeeInvoice = async (data) => {
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: `Service Fee Invoice - ${monthName} ${year} | MyCT2`,
+      subject: `Hóa đơn phí dịch vụ - ${monthName} ${year} | MyCT2`,
       htmlContent: `
         <!DOCTYPE html>
         <html>
@@ -289,32 +307,32 @@ exports.sendServiceFeeInvoice = async (data) => {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; text-align: center;">🏢 MyCT2</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Service Fee Invoice</p>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Hóa đơn phí dịch vụ</p>
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-            <p>Dear <strong>${name}</strong>,</p>
+            <p>Kính gửi <strong>${name}</strong>,</p>
             
-            <p>Your service fee invoice for <strong>${monthName} ${year}</strong> has been generated.</p>
+            <p>Hóa đơn phí dịch vụ của bạn cho tháng <strong>${monthName} ${year}</strong> đã được tạo.</p>
             
             <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #0D9488; border-bottom: 2px solid #0D9488; padding-bottom: 10px;">Invoice Details</h3>
+              <h3 style="margin-top: 0; color: #0D9488; border-bottom: 2px solid #0D9488; padding-bottom: 10px;">Chi tiết hóa đơn</h3>
               
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Flat No:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Căn hộ:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-weight: bold; text-align: right;">${flat_no}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Period:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Kỳ:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-weight: bold; text-align: right;">${monthName} ${year}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Amount Due:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Số tiền cần thanh toán:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-weight: bold; text-align: right; color: #0D9488; font-size: 20px;">${formattedAmount}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Due Date:</td>
+                  <td style="padding: 10px 0; color: #666;">Hạn thanh toán:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right; color: #ef4444;">${formattedDueDate}</td>
                 </tr>
               </table>
@@ -322,65 +340,65 @@ exports.sendServiceFeeInvoice = async (data) => {
             
             <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 20px 0;">
               <p style="margin: 0; color: #92400e;">
-                <strong>⚠️ Important:</strong> A late fee of ₹100 will be applied if payment is not received by the due date.
+                <strong>⚠️ Quan trọng:</strong> Phí phạt quá hạn 100.000 ₫ sẽ được áp dụng nếu thanh toán không được nhận trước hạn.
               </p>
             </div>
             
-            <p>Please log in to the Society Management Portal to make your payment.</p>
+            <p>Vui lòng đăng nhập vào Cổng thông tin quản lý chung cư để thực hiện thanh toán.</p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/service-fees" 
+              <a href="${process.env.CLIENT_URL || "http://localhost:3000"}/service-fees" 
                  style="background: #0D9488; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-                Pay Now
+                Thanh toán ngay
               </a>
             </div>
             
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center;">
-              This is an automated email from MyCT2 Management System.<br>
-              Please do not reply to this email.
+              Đây là email tự động từ Hệ thống quản lý MyCT2.<br>
+              Vui lòng không phản hồi email này.
             </p>
           </div>
         </body>
         </html>
       `,
       textContent: `
-        Service Fee Invoice - ${monthName} ${year}
+        Hóa đơn phí dịch vụ - ${monthName} ${year}
         MyCT2
         
-        Dear ${name},
+        Kính gửi ${name},
         
-        Your service fee invoice for ${monthName} ${year} has been generated.
+        Hóa đơn phí dịch vụ của bạn cho tháng ${monthName} ${year} đã được tạo.
         
-        Invoice Details:
-        - Flat No: ${flat_no}
-        - Period: ${monthName} ${year}
-        - Amount Due: ${formattedAmount}
-        - Due Date: ${formattedDueDate}
+        Chi tiết hóa đơn:
+        - Căn hộ: ${flat_no}
+        - Kỳ: ${monthName} ${year}
+        - Số tiền cần thanh toán: ${formattedAmount}
+        - Hạn thanh toán: ${formattedDueDate}
         
-        Important: A late fee of ₹100 will be applied if payment is not received by the due date.
+        Quan trọng: Phí phạt quá hạn 100.000 ₫ sẽ được áp dụng nếu thanh toán không được nhận trước hạn.
         
-        Please log in to make your payment.
+        Vui lòng đăng nhập để thanh toán.
         
-        Thank you,
+        Cảm ơn bạn,
         MyCT2
       `,
-      sender: brevoClient.defaultSender
+      sender: brevoClient.defaultSender,
     };
 
-    const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Service fee invoice email sent:', email);
+    const response =
+      await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("Đã gửi email hóa đơn phí dịch vụ:", email);
     return response;
   } catch (error) {
-    console.error('Error sending service fee invoice email:', error);
+    console.error("Lỗi khi gửi email hóa đơn phí dịch vụ:", error);
     throw error;
   }
 };
 
 /**
  * Send final warning email (Day 16 - 2 days before late fee)
- * @param {Object} data - Warning data
  */
 exports.sendFinalWarning = async (data) => {
   try {
@@ -392,7 +410,7 @@ exports.sendFinalWarning = async (data) => {
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: `⚠️ FINAL WARNING: Service Fee Payment Due in 2 Days | ${monthName} ${year}`,
+      subject: `⚠️ CẢNH BÁO CUỐI: Thanh toán phí dịch vụ còn 2 ngày | ${monthName} ${year}`,
       htmlContent: `
         <!DOCTYPE html>
         <html>
@@ -402,123 +420,123 @@ exports.sendFinalWarning = async (data) => {
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 30px; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; text-align: center;">⚠️ FINAL WARNING</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Service Fee Payment Due in 2 Days</p>
+            <h1 style="color: white; margin: 0; text-align: center;">⚠️ CẢNH BÁO CUỐI</h1>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Thanh toán phí dịch vụ còn 2 ngày</p>
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-            <p>Dear <strong>${name}</strong>,</p>
+            <p>Kính gửi <strong>${name}</strong>,</p>
             
-            <p>This is a <strong style="color: #ef4444;">FINAL REMINDER</strong> that your service fee payment for <strong>${monthName} ${year}</strong> is still pending.</p>
+            <p>Đây là <strong style="color: #ef4444;">LỜI NHẮC CUỐI CÙNG</strong> rằng khoản phí dịch vụ của bạn cho tháng <strong>${monthName} ${year}</strong> vẫn đang chờ thanh toán.</p>
             
             <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
               <p style="margin: 0; color: #dc2626; font-size: 18px; font-weight: bold;">
-                ⏰ Only 2 days left before late fee is applied!
+                ⏰ Chỉ còn 2 ngày trước khi áp dụng phí phạt!
               </p>
             </div>
             
             <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Flat No:</td>
+                  <td style="padding: 10px 0; color: #666;">Căn hộ:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right;">${flat_no}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Amount Due:</td>
+                  <td style="padding: 10px 0; color: #666;">Số tiền cần thanh toán:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right; color: #ef4444; font-size: 20px;">${formattedAmount}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Due Date:</td>
+                  <td style="padding: 10px 0; color: #666;">Hạn thanh toán:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right; color: #ef4444;">${formattedDueDate}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Late Fee After Due Date:</td>
-                  <td style="padding: 10px 0; font-weight: bold; text-align: right;">₹100</td>
+                  <td style="padding: 10px 0; color: #666;">Phí phạt sau hạn:</td>
+                  <td style="padding: 10px 0; font-weight: bold; text-align: right;">100.000 ₫</td>
                 </tr>
               </table>
             </div>
             
             <p style="color: #dc2626;">
-              <strong>Please make your payment immediately to avoid the late fee.</strong>
+              <strong>Vui lòng thanh toán ngay để tránh bị tính phí phạt.</strong>
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/service-fees" 
+              <a href="${process.env.CLIENT_URL || "http://localhost:3000"}/service-fees" 
                  style="background: #ef4444; color: white; padding: 15px 40px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px;">
-                PAY NOW - Avoid Late Fee
+                THANH TOÁN NGAY - Tránh phí phạt
               </a>
             </div>
             
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center;">
-              MyCT2 Management System
+              Hệ thống quản lý MyCT2
             </p>
           </div>
         </body>
         </html>
       `,
       textContent: `
-        ⚠️ FINAL WARNING: Service Fee Payment Due in 2 Days
+        ⚠️ CẢNH BÁO CUỐI: Thanh toán phí dịch vụ còn 2 ngày
         MyCT2
         
-        Dear ${name},
+        Kính gửi ${name},
         
-        This is a FINAL REMINDER that your service fee payment for ${monthName} ${year} is still pending.
+        Đây là LỜI NHẮC CUỐI CÙNG rằng khoản phí dịch vụ của bạn cho tháng ${monthName} ${year} vẫn đang chờ thanh toán.
         
-        ⏰ Only 2 days left before late fee is applied!
+        ⏰ Chỉ còn 2 ngày trước khi áp dụng phí phạt!
         
-        Payment Details:
-        - Flat No: ${flat_no}
-        - Amount Due: ${formattedAmount}
-        - Due Date: ${formattedDueDate}
-        - Late Fee After Due Date: ₹100
+        Chi tiết thanh toán:
+        - Căn hộ: ${flat_no}
+        - Số tiền cần thanh toán: ${formattedAmount}
+        - Hạn thanh toán: ${formattedDueDate}
+        - Phí phạt sau hạn: 100.000 ₫
         
-        Please make your payment immediately to avoid the late fee.
+        Vui lòng thanh toán ngay để tránh bị tính phí phạt.
         
-        Thank you,
+        Cảm ơn bạn,
         MyCT2
       `,
-      sender: brevoClient.defaultSender
+      sender: brevoClient.defaultSender,
     };
 
-    const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Final warning email sent:', email);
+    const response =
+      await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("Đã gửi email cảnh báo cuối:", email);
     return response;
   } catch (error) {
-    console.error('Error sending final warning email:', error);
+    console.error("Lỗi khi gửi email cảnh báo cuối:", error);
     throw error;
   }
 };
 
 /**
  * Send emergency alert email to all users
- * @param {Object} data - Emergency data
  */
 exports.sendEmergencyAlert = async (data) => {
   try {
-    const { 
-      email, 
-      name, 
-      triggered_by_name, 
-      triggered_by_flat, 
+    const {
+      email,
+      name,
+      triggered_by_name,
+      triggered_by_flat,
       triggered_by_phone,
-      triggered_at, 
-      notes 
+      triggered_at,
+      notes,
     } = data;
 
-    const formattedTime = new Date(triggered_at).toLocaleString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+    const formattedTime = new Date(triggered_at).toLocaleString("vi-VN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     });
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: '🚨 LIFT EMERGENCY ALERT - MyCT2',
+      subject: "🚨 CẢNH BÁO KHẨN CẤP THANG MÁY - MyCT2",
       htmlContent: `
         <!DOCTYPE html>
         <html>
@@ -529,137 +547,148 @@ exports.sendEmergencyAlert = async (data) => {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: #dc2626; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
             <span style="font-size: 48px;">🚨</span>
-            <h1 style="color: white; margin: 10px 0 0 0;">LIFT EMERGENCY</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 18px;">Someone is stuck in the lift!</p>
+            <h1 style="color: white; margin: 10px 0 0 0;">KHẨN CẤP THANG MÁY</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 18px;">Có người bị kẹt trong thang máy!</p>
           </div>
           
           <div style="background: #fef2f2; padding: 30px; border: 2px solid #dc2626; border-top: none; border-radius: 0 0 10px 10px;">
             <div style="background: white; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-              <h3 style="margin-top: 0; color: #dc2626;">⚠️ Emergency Details</h3>
+              <h3 style="margin-top: 0; color: #dc2626;">⚠️ Chi tiết khẩn cấp</h3>
               
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #fee2e2; color: #666;">Triggered By:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #fee2e2; color: #666;">Được kích hoạt bởi:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #fee2e2; font-weight: bold; text-align: right;">${triggered_by_name}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #fee2e2; color: #666;">Flat No:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #fee2e2; color: #666;">Căn hộ:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #fee2e2; font-weight: bold; text-align: right;">${triggered_by_flat}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #fee2e2; color: #666;">Contact:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #fee2e2; color: #666;">Số điện thoại liên hệ:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #fee2e2; font-weight: bold; text-align: right;">
                     <a href="tel:${triggered_by_phone}" style="color: #dc2626; text-decoration: none;">${triggered_by_phone}</a>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Time:</td>
+                  <td style="padding: 10px 0; color: #666;">Thời gian:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right;">${formattedTime}</td>
                 </tr>
               </table>
               
-              ${notes ? `
+              ${
+                notes
+                  ? `
               <div style="margin-top: 15px; padding: 10px; background: #fef2f2; border-radius: 4px;">
-                <strong>Notes:</strong> ${notes}
+                <strong>Ghi chú:</strong> ${notes}
               </div>
-              ` : ''}
+              `
+                  : ""
+              }
             </div>
             
             <div style="background: #dc2626; color: white; padding: 15px; border-radius: 8px; text-align: center;">
               <p style="margin: 0; font-size: 16px; font-weight: bold;">
-                ⚡ IMMEDIATE ATTENTION REQUIRED
+                ⚡ CẦN CHÚ Ý NGAY LẬP TỨC
               </p>
               <p style="margin: 10px 0 0 0; font-size: 14px;">
-                If you are nearby, please check on the lift immediately.<br>
-                Contact building security or call for help if needed.
+                Nếu bạn ở gần, vui lòng kiểm tra thang máy ngay lập tức.<br>
+                Liên hệ bảo vệ tòa nhà hoặc gọi hỗ trợ nếu cần.
               </p>
             </div>
             
             <hr style="border: none; border-top: 1px solid #fecaca; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center;">
-              This is an automated emergency alert from MyCT2.
+              Đây là cảnh báo khẩn cấp tự động từ MyCT2.
             </p>
           </div>
         </body>
         </html>
       `,
       textContent: `
-        🚨 LIFT EMERGENCY ALERT - MyCT2
+        🚨 CẢNH BÁO KHẨN CẤP THANG MÁY - MyCT2
         
-        SOMEONE IS STUCK IN THE LIFT!
+        CÓ NGƯỜI BỊ KẸT TRONG THANG MÁY!
         
-        Emergency Details:
-        - Triggered By: ${triggered_by_name}
-        - Flat No: ${triggered_by_flat}
-        - Contact: ${triggered_by_phone}
-        - Time: ${formattedTime}
-        ${notes ? `- Notes: ${notes}` : ''}
+        Chi tiết khẩn cấp:
+        - Được kích hoạt bởi: ${triggered_by_name}
+        - Căn hộ: ${triggered_by_flat}
+        - Số điện thoại liên hệ: ${triggered_by_phone}
+        - Thời gian: ${formattedTime}
+        ${notes ? `- Ghi chú: ${notes}` : ""}
         
-        ⚡ IMMEDIATE ATTENTION REQUIRED
+        ⚡ CẦN CHÚ Ý NGAY LẬP TỨC
         
-        If you are nearby, please check on the lift immediately.
-        Contact building security or call for help if needed.
+        Nếu bạn ở gần, vui lòng kiểm tra thang máy ngay lập tức.
+        Liên hệ bảo vệ tòa nhà hoặc gọi hỗ trợ nếu cần.
         
         - MyCT2
       `,
-      sender: brevoClient.defaultSender
+      sender: brevoClient.defaultSender,
     };
 
-    const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Emergency alert email sent:', email);
+    const response =
+      await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("Đã gửi email cảnh báo khẩn cấp:", email);
     return response;
   } catch (error) {
-    console.error('Error sending emergency alert email:', error);
+    console.error("Lỗi khi gửi email cảnh báo khẩn cấp:", error);
     throw error;
   }
 };
 
 /**
  * Send emergency resolved email to all users
- * @param {Object} data - Resolution data
  */
 exports.sendEmergencyResolved = async (data) => {
   try {
-    const { 
-      email, 
-      name, 
-      resolved_by_name, 
+    const {
+      email,
+      name,
+      resolved_by_name,
       resolved_by_flat,
       resolved_at,
       triggered_by_name,
       triggered_by_flat,
-      triggered_at
+      triggered_at,
     } = data;
 
-    const formattedResolvedTime = new Date(resolved_at).toLocaleString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
+    const formattedResolvedTime = new Date(resolved_at).toLocaleString(
+      "vi-VN",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      },
+    );
 
-    const formattedTriggeredTime = new Date(triggered_at).toLocaleString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
+    const formattedTriggeredTime = new Date(triggered_at).toLocaleString(
+      "vi-VN",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      },
+    );
 
     // Calculate duration
     const durationMs = new Date(resolved_at) - new Date(triggered_at);
     const durationMinutes = Math.round(durationMs / 60000);
-    const durationText = durationMinutes < 60 
-      ? `${durationMinutes} minute${durationMinutes !== 1 ? 's' : ''}`
-      : `${Math.floor(durationMinutes / 60)} hour${Math.floor(durationMinutes / 60) !== 1 ? 's' : ''} ${durationMinutes % 60} minute${durationMinutes % 60 !== 1 ? 's' : ''}`;
+    const durationText =
+      durationMinutes < 60
+        ? `${durationMinutes} phút`
+        : `${Math.floor(durationMinutes / 60)} giờ ${durationMinutes % 60} phút`;
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: '✅ Lift Emergency Resolved - MyCT2',
+      subject: "✅ Đã giải quyết khẩn cấp thang máy - MyCT2",
       htmlContent: `
         <!DOCTYPE html>
         <html>
@@ -670,33 +699,33 @@ exports.sendEmergencyResolved = async (data) => {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: #16a34a; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
             <span style="font-size: 48px;">✅</span>
-            <h1 style="color: white; margin: 10px 0 0 0;">EMERGENCY RESOLVED</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 18px;">The lift emergency has been resolved</p>
+            <h1 style="color: white; margin: 10px 0 0 0;">ĐÃ GIẢI QUYẾT KHẨN CẤP</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 18px;">Sự cố thang máy đã được xử lý</p>
           </div>
           
           <div style="background: #f0fdf4; padding: 30px; border: 2px solid #16a34a; border-top: none; border-radius: 0 0 10px 10px;">
             <div style="background: white; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-              <h3 style="margin-top: 0; color: #16a34a;">📋 Resolution Details</h3>
+              <h3 style="margin-top: 0; color: #16a34a;">📋 Chi tiết giải quyết</h3>
               
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; color: #666;">Originally Triggered By:</td>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; font-weight: bold; text-align: right;">${triggered_by_name} (Flat ${triggered_by_flat})</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; color: #666;">Được kích hoạt bởi:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; font-weight: bold; text-align: right;">${triggered_by_name} (Căn hộ ${triggered_by_flat})</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; color: #666;">Triggered At:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; color: #666;">Thời gian kích hoạt:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; text-align: right;">${formattedTriggeredTime}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; color: #666;">Resolved By:</td>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; font-weight: bold; text-align: right;">${resolved_by_name} (Flat ${resolved_by_flat})</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; color: #666;">Được giải quyết bởi:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; font-weight: bold; text-align: right;">${resolved_by_name} (Căn hộ ${resolved_by_flat})</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; color: #666;">Resolved At:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; color: #666;">Thời gian giải quyết:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #dcfce7; text-align: right;">${formattedResolvedTime}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Response Time:</td>
+                  <td style="padding: 10px 0; color: #666;">Thời gian phản hồi:</td>
                   <td style="padding: 10px 0; font-weight: bold; text-align: right; color: #16a34a;">${durationText}</td>
                 </tr>
               </table>
@@ -704,123 +733,136 @@ exports.sendEmergencyResolved = async (data) => {
             
             <div style="background: #16a34a; color: white; padding: 15px; border-radius: 8px; text-align: center;">
               <p style="margin: 0; font-size: 16px; font-weight: bold;">
-                🎉 All Clear!
+                🎉 Đã an toàn!
               </p>
               <p style="margin: 10px 0 0 0; font-size: 14px;">
-                The situation has been handled and everyone is safe.<br>
-                Thank you for your attention and cooperation.
+                Sự việc đã được xử lý và mọi người đều an toàn.<br>
+                Cảm ơn bạn đã chú ý và hợp tác.
               </p>
             </div>
             
             <hr style="border: none; border-top: 1px solid #bbf7d0; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center;">
-              This is an automated notification from MyCT2.
+              Đây là thông báo tự động từ MyCT2.
             </p>
           </div>
         </body>
         </html>
       `,
       textContent: `
-        ✅ LIFT EMERGENCY RESOLVED - MyCT2
+        ✅ ĐÃ GIẢI QUYẾT KHẨN CẤP THANG MÁY - MyCT2
         
-        The lift emergency has been resolved!
+        Sự cố thang máy đã được giải quyết!
         
-        Resolution Details:
-        - Originally Triggered By: ${triggered_by_name} (Flat ${triggered_by_flat})
-        - Triggered At: ${formattedTriggeredTime}
-        - Resolved By: ${resolved_by_name} (Flat ${resolved_by_flat})
-        - Resolved At: ${formattedResolvedTime}
-        - Response Time: ${durationText}
+        Chi tiết giải quyết:
+        - Được kích hoạt bởi: ${triggered_by_name} (Căn hộ ${triggered_by_flat})
+        - Thời gian kích hoạt: ${formattedTriggeredTime}
+        - Được giải quyết bởi: ${resolved_by_name} (Căn hộ ${resolved_by_flat})
+        - Thời gian giải quyết: ${formattedResolvedTime}
+        - Thời gian phản hồi: ${durationText}
         
-        🎉 All Clear! The situation has been handled and everyone is safe.
+        🎉 Đã an toàn! Sự việc đã được xử lý và mọi người đều an toàn.
         
-        Thank you for your attention and cooperation.
+        Cảm ơn bạn đã chú ý và hợp tác.
         
         - MyCT2
       `,
-      sender: brevoClient.defaultSender
+      sender: brevoClient.defaultSender,
     };
 
-    const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Emergency resolved email sent:', email);
+    const response =
+      await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("Đã gửi email thông báo đã giải quyết khẩn cấp:", email);
     return response;
   } catch (error) {
-    console.error('Error sending emergency resolved email:', error);
+    console.error("Lỗi khi gửi email thông báo đã giải quyết khẩn cấp:", error);
     throw error;
   }
 };
 
 /**
  * Send complaint status update email
- * @param {Object} data - Complaint data
- * @param {string} data.email - Recipient email
- * @param {string} data.name - Recipient name
- * @param {string} data.flat_no - Flat number
- * @param {string} data.description - Complaint description
- * @param {string} data.previous_status - Previous status
- * @param {string} data.new_status - New status
- * @param {string} data.admin_notes - Admin notes (optional)
- * @param {string} data.updated_by - Name of admin who updated
- * @param {Date} data.updated_at - Update timestamp
  */
 exports.sendComplaintStatusUpdate = async (data) => {
   try {
-    const { email, name, flat_no, description, previous_status, new_status, admin_notes, updated_by, updated_at } = data;
+    const {
+      email,
+      name,
+      flat_no,
+      description,
+      previous_status,
+      new_status,
+      admin_notes,
+      updated_by,
+      updated_at,
+    } = data;
 
     const formattedDate = formatDate(updated_at);
-    
-    // Status colors and labels
+
+    // Status colors and labels (tiếng Việt)
     const statusConfig = {
-      'open': { color: '#f59e0b', bg: '#fef3c7', label: 'Open', icon: '📋' },
-      'in-progress': { color: '#3b82f6', bg: '#dbeafe', label: 'In Progress', icon: '🔄' },
-      'resolved': { color: '#22c55e', bg: '#dcfce7', label: 'Resolved', icon: '✅' }
+      open: { color: "#f59e0b", bg: "#fef3c7", label: "Đang chờ", icon: "📋" },
+      "in-progress": {
+        color: "#3b82f6",
+        bg: "#dbeafe",
+        label: "Đang xử lý",
+        icon: "🔄",
+      },
+      resolved: {
+        color: "#22c55e",
+        bg: "#dcfce7",
+        label: "Đã giải quyết",
+        icon: "✅",
+      },
     };
 
-    const newStatusConfig = statusConfig[new_status] || statusConfig['open'];
-    const prevStatusConfig = statusConfig[previous_status] || statusConfig['open'];
+    const newStatusConfig = statusConfig[new_status] || statusConfig["open"];
+    const prevStatusConfig =
+      statusConfig[previous_status] || statusConfig["open"];
 
     // Truncate description for email
-    const shortDescription = description.length > 200 
-      ? description.substring(0, 200) + '...' 
-      : description;
+    const shortDescription =
+      description.length > 200
+        ? description.substring(0, 200) + "..."
+        : description;
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: `Complaint Update: Status changed to ${newStatusConfig.label}`,
+      subject: `Cập nhật khiếu nại: Trạng thái đã thay đổi thành ${newStatusConfig.label}`,
       htmlContent: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Complaint Status Update</title>
+          <title>Cập nhật khiếu nại</title>
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; text-align: center;">MyCT2</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Complaint Status Update</p>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Cập nhật khiếu nại</p>
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="margin-bottom: 20px;">Dear <strong>${name}</strong>,</p>
+            <p style="margin-bottom: 20px;">Kính gửi <strong>${name}</strong>,</p>
             
-            <p>Your complaint status has been updated. Here are the details:</p>
+            <p>Trạng thái khiếu nại của bạn đã được cập nhật. Sau đây là chi tiết:</p>
             
             <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 10px;">Complaint Details</h3>
+              <h3 style="margin-top: 0; color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 10px;">Chi tiết khiếu nại</h3>
               
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Flat No:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Căn hộ:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-weight: bold; text-align: right;">${flat_no}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Description:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Mô tả:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; text-align: right;">${shortDescription}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Previous Status:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Trạng thái cũ:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; text-align: right;">
                     <span style="background: ${prevStatusConfig.bg}; color: ${prevStatusConfig.color}; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;">
                       ${prevStatusConfig.icon} ${prevStatusConfig.label}
@@ -828,7 +870,7 @@ exports.sendComplaintStatusUpdate = async (data) => {
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">New Status:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Trạng thái mới:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; text-align: right;">
                     <span style="background: ${newStatusConfig.bg}; color: ${newStatusConfig.color}; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;">
                       ${newStatusConfig.icon} ${newStatusConfig.label}
@@ -836,86 +878,97 @@ exports.sendComplaintStatusUpdate = async (data) => {
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Updated By:</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666;">Cập nhật bởi:</td>
                   <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-weight: bold; text-align: right;">${updated_by}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; color: #666;">Updated On:</td>
+                  <td style="padding: 10px 0; color: #666;">Cập nhật lúc:</td>
                   <td style="padding: 10px 0; text-align: right;">${formattedDate}</td>
                 </tr>
               </table>
               
-              ${admin_notes ? `
+              ${
+                admin_notes
+                  ? `
               <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-left: 4px solid #0d9488; border-radius: 4px;">
-                <p style="margin: 0; color: #666; font-size: 12px; text-transform: uppercase; font-weight: bold;">Admin Notes:</p>
+                <p style="margin: 0; color: #666; font-size: 12px; text-transform: uppercase; font-weight: bold;">Ghi chú của quản trị:</p>
                 <p style="margin: 8px 0 0 0; color: #333;">${admin_notes}</p>
               </div>
-              ` : ''}
+              `
+                  : ""
+              }
             </div>
             
-            ${new_status === 'resolved' ? `
+            ${
+              new_status === "resolved"
+                ? `
             <div style="background: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
               <p style="margin: 0; font-size: 16px; font-weight: bold;">
-                ✅ Your complaint has been resolved!
+                ✅ Khiếu nại của bạn đã được giải quyết!
               </p>
               <p style="margin: 10px 0 0 0; font-size: 14px;">
-                Thank you for bringing this to our attention.
+                Cảm ơn bạn đã phản ánh.
               </p>
             </div>
-            ` : `
+            `
+                : `
             <div style="background: ${newStatusConfig.bg}; color: ${newStatusConfig.color}; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
               <p style="margin: 0; font-size: 14px;">
-                ${newStatusConfig.icon} Your complaint is now <strong>${newStatusConfig.label}</strong>
+                ${newStatusConfig.icon} Khiếu nại của bạn hiện đang ở trạng thái <strong>${newStatusConfig.label}</strong>
               </p>
               <p style="margin: 10px 0 0 0; font-size: 13px;">
-                We will keep you updated on any further progress.
+                Chúng tôi sẽ tiếp tục cập nhật cho bạn.
               </p>
             </div>
-            `}
+            `
+            }
             
             <p style="color: #666; font-size: 14px;">
-              You can view your complaint details by logging into the society management portal.
+              Bạn có thể xem chi tiết khiếu nại bằng cách đăng nhập vào cổng thông tin quản lý chung cư.
             </p>
             
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center;">
-              This is an automated notification from MyCT2.
+              Đây là thông báo tự động từ MyCT2.
             </p>
           </div>
         </body>
         </html>
       `,
       textContent: `
-        Complaint Status Update - MyCT2
+        Cập nhật khiếu nại - MyCT2
         
-        Dear ${name},
+        Kính gửi ${name},
         
-        Your complaint status has been updated.
+        Trạng thái khiếu nại của bạn đã được cập nhật.
         
-        Complaint Details:
-        - Flat No: ${flat_no}
-        - Description: ${shortDescription}
-        - Previous Status: ${prevStatusConfig.label}
-        - New Status: ${newStatusConfig.label}
-        - Updated By: ${updated_by}
-        - Updated On: ${formattedDate}
-        ${admin_notes ? `- Admin Notes: ${admin_notes}` : ''}
+        Chi tiết khiếu nại:
+        - Căn hộ: ${flat_no}
+        - Mô tả: ${shortDescription}
+        - Trạng thái cũ: ${prevStatusConfig.label}
+        - Trạng thái mới: ${newStatusConfig.label}
+        - Cập nhật bởi: ${updated_by}
+        - Cập nhật lúc: ${formattedDate}
+        ${admin_notes ? `- Ghi chú của quản trị: ${admin_notes}` : ""}
         
-        ${new_status === 'resolved' 
-          ? 'Your complaint has been resolved! Thank you for bringing this to our attention.' 
-          : 'We will keep you updated on any further progress.'}
+        ${
+          new_status === "resolved"
+            ? "Khiếu nại của bạn đã được giải quyết! Cảm ơn bạn đã phản ánh."
+            : "Chúng tôi sẽ tiếp tục cập nhật cho bạn."
+        }
         
         - MyCT2
       `,
-      sender: brevoClient.defaultSender
+      sender: brevoClient.defaultSender,
     };
 
-    const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Complaint status update email sent:', email);
+    const response =
+      await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("Đã gửi email cập nhật trạng thái khiếu nại:", email);
     return response;
   } catch (error) {
-    console.error('Error sending complaint status update email:', error);
+    console.error("Lỗi khi gửi email cập nhật trạng thái khiếu nại:", error);
     throw error;
   }
 };
@@ -930,7 +983,7 @@ exports.sendPasswordResetOTP = async (data) => {
     const mailOptions = {
       from: `"MyCT2" <${process.env.GMAIL_USER}>`,
       to: email,
-      subject: 'Password Reset OTP - MyCT2',
+      subject: "Mã OTP đặt lại mật khẩu - MyCT2",
 
       html: `
         <!DOCTYPE html>
@@ -938,32 +991,32 @@ exports.sendPasswordResetOTP = async (data) => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Password Reset OTP</title>
+          <title>Mã OTP đặt lại mật khẩu</title>
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; text-align: center;">🏢 MyCT2</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Password Reset Request</p>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Yêu cầu đặt lại mật khẩu</p>
           </div>
 
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="margin-bottom: 20px;">Dear <strong>${name}</strong>,</p>
+            <p style="margin-bottom: 20px;">Kính gửi <strong>${name}</strong>,</p>
 
-            <p>We received a request to reset your password. Use the OTP below to proceed:</p>
+            <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu. Sử dụng mã OTP dưới đây để tiếp tục:</p>
 
             <div style="background: #0D9488; border-radius: 12px; padding: 25px; margin: 25px 0; text-align: center;">
-              <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 0 0 10px 0;">Your One-Time Password (OTP)</p>
+              <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 0 0 10px 0;">Mã OTP của bạn</p>
               <h2 style="color: white; font-size: 42px; letter-spacing: 12px; margin: 0; font-family: monospace;">${otp}</h2>
             </div>
 
             <div style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 15px; margin: 20px 0;">
               <p style="margin: 0; color: #92400E; font-size: 14px;">
-                <strong>⏰ Important:</strong> This OTP will expire in <strong>${expiryMinutes} minutes</strong>.
+                <strong>⏰ Quan trọng:</strong> Mã OTP sẽ hết hạn sau <strong>${expiryMinutes} phút</strong>.
               </p>
             </div>
 
             <p style="color: #666; font-size: 14px;">
-              If you didn't request a password reset, please ignore this email.
+              Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
             </p>
           </div>
         </body>
@@ -971,32 +1024,29 @@ exports.sendPasswordResetOTP = async (data) => {
       `,
 
       text: `
-Password Reset OTP - MyCT2
+Mã OTP đặt lại mật khẩu - MyCT2
 
-Dear ${name},
+Kính gửi ${name},
 
-Your OTP: ${otp}
+Mã OTP của bạn: ${otp}
 
-This OTP will expire in ${expiryMinutes} minutes.
-      `
+Mã này sẽ hết hạn sau ${expiryMinutes} phút.
+      `,
     };
 
     const response = await transporter.sendMail(mailOptions);
 
-    console.log('Password reset OTP email sent:', email);
+    console.log("Đã gửi email OTP đặt lại mật khẩu:", email);
 
     return response;
   } catch (error) {
-    console.error('Error sending password reset OTP email:', error);
+    console.error("Lỗi khi gửi email OTP đặt lại mật khẩu:", error);
     throw error;
   }
 };
 
 /**
  * Send password reset confirmation email
- * @param {Object} data - User data
- * @param {string} data.email - Recipient email
- * @param {string} data.name - Recipient name
  */
 exports.sendPasswordResetConfirmation = async (data) => {
   try {
@@ -1004,67 +1054,67 @@ exports.sendPasswordResetConfirmation = async (data) => {
 
     const sendSmtpEmail = {
       to: [{ email, name }],
-      subject: 'Password Changed Successfully - MyCT2',
+      subject: "Đã thay đổi mật khẩu thành công - MyCT2",
       htmlContent: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Password Changed</title>
+          <title>Đã thay đổi mật khẩu</title>
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; text-align: center;">🏢 MyCT2</h1>
-            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Password Changed</p>
+            <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 0 0;">Đã thay đổi mật khẩu</p>
           </div>
           
           <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="margin-bottom: 20px;">Dear <strong>${name}</strong>,</p>
+            <p style="margin-bottom: 20px;">Kính gửi <strong>${name}</strong>,</p>
             
             <div style="background: #DCFCE7; border: 1px solid #22C55E; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
               <span style="color: #22C55E; font-size: 40px;">✓</span>
-              <p style="margin: 10px 0 0 0; color: #166534; font-weight: bold; font-size: 18px;">Password Changed Successfully!</p>
+              <p style="margin: 10px 0 0 0; color: #166534; font-weight: bold; font-size: 18px;">Đổi mật khẩu thành công!</p>
             </div>
             
-            <p>Your password has been successfully changed. You can now log in with your new password.</p>
+            <p>Mật khẩu của bạn đã được thay đổi thành công. Bạn có thể đăng nhập bằng mật khẩu mới.</p>
             
             <div style="background: #FEE2E2; border: 1px solid #EF4444; border-radius: 8px; padding: 15px; margin: 20px 0;">
               <p style="margin: 0; color: #991B1B; font-size: 14px;">
-                <strong>⚠️ Security Notice:</strong> If you did not make this change, please contact 
-                the society office immediately and consider securing your email account.
+                <strong>⚠️ Lưu ý bảo mật:</strong> Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ văn phòng chung cư ngay lập tức và xem xét bảo mật tài khoản email của bạn.
               </p>
             </div>
             
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center; margin-bottom: 0;">
-              This is an automated email from MyCT2 Management System.<br>
-              Please do not reply to this email.
+              Đây là email tự động từ Hệ thống quản lý MyCT2.<br>
+              Vui lòng không phản hồi email này.
             </p>
           </div>
         </body>
         </html>
       `,
       textContent: `
-        Password Changed Successfully - MyCT2
+        Đã thay đổi mật khẩu thành công - MyCT2
         
-        Dear ${name},
+        Kính gửi ${name},
         
-        Your password has been successfully changed. You can now log in with your new password.
+        Mật khẩu của bạn đã được thay đổi thành công. Bạn có thể đăng nhập bằng mật khẩu mới.
         
-        If you did not make this change, please contact the society office immediately.
+        Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ văn phòng chung cư ngay lập tức.
         
         - MyCT2
       `,
-      sender: brevoClient.defaultSender
+      sender: brevoClient.defaultSender,
     };
 
-    const response = await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Password reset confirmation email sent:', email);
+    const response =
+      await brevoClient.apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("Đã gửi email xác nhận đã đổi mật khẩu:", email);
     return response;
   } catch (error) {
-    console.error('Error sending password reset confirmation email:', error);
+    console.error("Lỗi khi gửi email xác nhận đã đổi mật khẩu:", error);
     throw error;
   }
 };

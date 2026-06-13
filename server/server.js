@@ -23,6 +23,8 @@ const assetRoutes = require('./routes/asset.routes');
 const serviceFeeRoutes = require('./routes/serviceFee.routes');
 const expenseRoutes = require("./routes/expenses");
 const reportRoutes = require("./routes/reports");
+const residentRoutes = require("./routes/residentRoutes");
+
 
 // Import cron jobs
 const initCronJobs = require('./jobs');
@@ -33,16 +35,29 @@ const connectDB = require('./config/db');
 // Initialize express app
 const app = express();
 
+// BẢO EXPRESS TIN TƯỞNG PROXY (NGROK) [3†L29-L30]
+app.set('trust proxy', 1); 
+
+
 // Connect to MongoDB
 connectDB();
 
 
 // Middleware
 app.use(helmet()); // Security headers
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true, // Allow cookies
-}));
+// app.use(cors({
+//   origin: process.env.CLIENT_URL || 'http://localhost:3000',
+//   credentials: true, // Allow cookies
+// }));
+app.use(
+  cors({
+    // Lấy origin từ biến môi trường, đảm bảo nó là link HTTPS ngrok của bạn
+    origin: process.env.CLIENT_URL,
+    credentials: true, // Cho phép gửi cookie
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 app.use(morgan('dev')); // Logging
 app.use(express.json({ limit: '10mb' })); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
@@ -88,6 +103,8 @@ app.use('/api/assets', assetRoutes);
 app.use("/api/service-fees", serviceFeeRoutes);
 app.use("/api/admin/expenses", expenseRoutes);
 app.use("/api/admin/reports", reportRoutes);
+app.use("/api/residents", residentRoutes);
+
 
 
 // 404 handler

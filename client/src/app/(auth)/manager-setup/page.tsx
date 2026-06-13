@@ -67,30 +67,30 @@ export default function ManagerSetupPage() {
     // Validation
     const { name, email, password, confirmPassword, flat_no, phone } = formData;
     
-    if (!name || !email || !password || !confirmPassword || !flat_no || !phone) {
-      setError('Please fill in all fields');
-      return;
-    }
+   if (!name || !email || !password || !confirmPassword || !flat_no || !phone) {
+     setError("Vui lòng điền đầy đủ thông tin vào tất cả các trường.");
+     return;
+   }
 
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
+   if (!email.includes("@")) {
+     setError("Vui lòng nhập địa chỉ email hợp lệ.");
+     return;
+   }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
+   if (password.length < 6) {
+     setError("Mật khẩu phải có ít nhất 6 ký tự.");
+     return;
+   }
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+   if (password !== confirmPassword) {
+     setError("Mật khẩu xác nhận không khớp.");
+     return;
+   }
 
-    if (!/^\d{10}$/.test(phone)) {
-      setError('Please enter a valid 10-digit phone number');
-      return;
-    }
+   if (!/^\d{10}$/.test(phone)) {
+     setError("Vui lòng nhập số điện thoại gồm 10 chữ số hợp lệ.");
+     return;
+   }
 
     setLoading(true);
     
@@ -109,7 +109,9 @@ export default function ManagerSetupPage() {
         setError(result.message);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Setup failed. Please try again.');
+      setError(
+        err.response?.data?.message || "Thiết lập thất bại. Vui lòng thử lại.",
+      );
     } finally {
       setLoading(false);
     }
@@ -133,7 +135,9 @@ export default function ManagerSetupPage() {
     return (
       <Card className="shadow-lg">
         <CardContent className="py-8 text-center">
-          <p className="text-gray-600">Manager already registered. Redirecting to login...</p>
+          <p className="text-gray-600">
+            "Quản lý đã được đăng ký. Đang chuyển hướng đến trang đăng nhập..."
+          </p>
         </CardContent>
       </Card>
     );
@@ -142,59 +146,62 @@ export default function ManagerSetupPage() {
   return (
     <Card className="shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Manager Setup</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">
+          Thiết lập tài khoản Quản lý
+        </CardTitle>
         <CardDescription className="text-center">
-          Set up the first manager account for Rajarshi Darshan
+          Thiết lập tài khoản quản lý đầu tiên cho MyCT2
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <Alert className="border-blue-500 bg-blue-50 text-blue-700">
             <AlertDescription>
-              👋 Welcome! As the first user, you will be registered as the Manager with full administrative access.
+              👋 Chào mừng! Là người dùng đầu tiên, bạn sẽ được đăng ký với vai
+              trò Quản lý và có toàn quyền quản trị.
             </AlertDescription>
           </Alert>
-          
+
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name">Họ và tên</Label>
             <Input
               id="name"
               type="text"
-              placeholder="Enter your full name"
+              placeholder="Nhập họ và tên của bạn"
               value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+              onChange={(e) => handleChange("name", e.target.value)}
               disabled={loading}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Nhập email của bạn"
               value={formData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
+              onChange={(e) => handleChange("email", e.target.value)}
               disabled={loading}
             />
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="flat_no">Flat Number</Label>
-              <Select 
-                value={formData.flat_no} 
-                onValueChange={(value) => handleChange('flat_no', value)}
+              <Label htmlFor="flat_no">Số căn hộ</Label>
+              <Select
+                value={formData.flat_no}
+                onValueChange={(value) => handleChange("flat_no", value)}
                 disabled={loading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select flat" />
+                  <SelectValue placeholder="Chọn căn hộ" />
                 </SelectTrigger>
                 <SelectContent>
                   {FLAT_NUMBERS.map((flat) => (
@@ -205,61 +212,62 @@ export default function ManagerSetupPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">Số điện thoại</Label>
               <Input
                 id="phone"
                 type="tel"
-                placeholder="10-digit number"
+                placeholder="Số điện thoại 10 chữ số"
                 value={formData.phone}
-                onChange={(e) => handleChange('phone', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                onChange={(e) =>
+                  handleChange(
+                    "phone",
+                    e.target.value.replace(/\D/g, "").slice(0, 10),
+                  )
+                }
                 disabled={loading}
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Mật khẩu</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Create a password (min 6 characters)"
+              placeholder="Tạo mật khẩu (tối thiểu 6 ký tự)"
               value={formData.password}
-              onChange={(e) => handleChange('password', e.target.value)}
+              onChange={(e) => handleChange("password", e.target.value)}
               disabled={loading}
             />
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
             <Input
               id="confirmPassword"
               type="password"
-              placeholder="Confirm your password"
+              placeholder="Xác nhận lại mật khẩu"
               value={formData.confirmPassword}
-              onChange={(e) => handleChange('confirmPassword', e.target.value)}
+              onChange={(e) => handleChange("confirmPassword", e.target.value)}
               disabled={loading}
             />
           </div>
         </CardContent>
-        
+
         <CardFooter className="flex flex-col space-y-4">
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? 'Setting up...' : 'Complete Setup'}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Đang thiết lập..." : "Hoàn tất thiết lập"}
           </Button>
-          
+
           <p className="text-sm text-center text-gray-600">
-            Already have a manager account?{' '}
-            <Link 
-              href="/login" 
+            Đã có tài khoản quản lý?{" "}
+            <Link
+              href="/login"
               className="text-primary font-medium hover:underline"
             >
-              Sign in here
+              Đăng nhập tại đây
             </Link>
           </p>
         </CardFooter>

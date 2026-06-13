@@ -311,7 +311,7 @@ const capturePaypalPayment = async (req, res) => {
     if (!order_id) {
       return res
         .status(400)
-        .json({ success: false, message: "Missing PayPal order ID" });
+        .json({ success: false, message: "Thiếu mã đơn hàng PayPal" });
     }
 
     const fee = await ServiceFee.findById(req.params.id);
@@ -335,7 +335,10 @@ const capturePaypalPayment = async (req, res) => {
     if (fee.paypal_order_id && fee.paypal_order_id !== order_id) {
       return res
         .status(400)
-        .json({ success: false, message: "PayPal order khong khop hoa don" });
+        .json({
+          success: false,
+          message: "PayPal order không khớp với hóa đơn",
+        });
     }
 
     const request = new paypal.orders.OrdersCaptureRequest(order_id);
@@ -345,7 +348,7 @@ const capturePaypalPayment = async (req, res) => {
     if (capture.result.status !== "COMPLETED") {
       return res
         .status(400)
-        .json({ success: false, message: "Payment not completed" });
+        .json({ success: false, message: "Thanh toán chưa hoàn tất" });
     }
 
     const transactionId =
